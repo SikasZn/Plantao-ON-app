@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Plantão ON",
+    "slug": "plantao-on",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.imttech.plantaoon",
+      "usesAppleSignIn": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F1B33",
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.imttech.plantaoon"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-mail-composer",
+      "@react-native-community/datetimepicker",
+      "@react-native-google-signin/google-signin",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Plantão ON usa sua galeria para você escolher uma foto de perfil.",
+          "cameraPermission": "O Plantão ON usa a câmera para você tirar uma foto de perfil."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bfc83a92-ac3e-4c11-8f6b-909f221d606c"
+      }
+    }
+  }
+}
