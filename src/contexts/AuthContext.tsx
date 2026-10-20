@@ -7,6 +7,7 @@ import {
   signInWithEmail,
   signInWithIdToken,
   signOut as signOutService,
+  deleteOwnAccount,
   signUpWithEmail,
   sendPasswordResetEmail,
   subscribeToAuthChanges,
@@ -47,6 +48,8 @@ interface AuthContextValue {
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
+  // exclui a conta e os dados no servidor e encerra a sessão
+  deleteAccount: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
 
@@ -160,6 +163,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     signOut: async () => {
       await signOutService();
+    },
+    deleteAccount: async () => {
+      await deleteOwnAccount();
     },
     resetPassword: async (email) => {
       await sendPasswordResetEmail(email);

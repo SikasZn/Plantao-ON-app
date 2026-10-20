@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, User } from 'lucide-react-native';
+import { ArrowLeft, Trash2, User } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,9 +41,10 @@ type FormData = z.infer<typeof schema>;
 type Props = NativeStackScreenProps<MainStackParamList, 'Profile'>;
 
 export function ProfileScreen({ navigation }: Props) {
-  const { user } = useAuth();
+  const { user, deleteAccount } = useAuth();
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const {
@@ -99,6 +100,37 @@ export function ProfileScreen({ navigation }: Props) {
       Alert.alert('Não foi possível salvar', (error as Error).message);
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Excluir conta',
+      'Sua conta e todos os seus dados (perfil, locais de trabalho, plantões e relatórios) serão apagados de forma definitiva. Essa ação não pode ser desfeita.\n\nSe você tem uma assinatura, ela NÃO é cancelada automaticamente: cancele antes na App Store ou no Google Play.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Continuar',
+          style: 'destructive',
+          onPress: () =>
+            Alert.alert('Tem certeza?', 'Todos os seus dados serão apagados agora e não poderão ser recuperados.', [
+              { text: 'Voltar', style: 'cancel' },
+              { text: 'Excluir definitivamente', style: 'destructive', onPress: handleDeleteAccount },
+            ]),
+        },
+      ]
+    );
+  }
+
+  async function handleDeleteAccount() {
+    setIsDeleting(true);
+    try {
+      // depois de apagar, a sessão some e o RootNavigator volta sozinho
+      // para a tela de login
+      await deleteAccount();
+    } catch (error) {
+      setIsDeleting(false);
+      Alert.alert('Não foi possível excluir a conta', (error as Error).message);
     }
   }
 
@@ -166,6 +198,22 @@ export function ProfileScreen({ navigation }: Props) {
             />
 
             <Button label="Salvar alterações" onPress={handleSubmit(onSubmit)} loading={isSaving} />
+
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={confirmDeleteAccount}
+              disabled={isDeleting}
+              accessibilityRole="button"
+            >
+              {isDeleting ? (
+                <ActivityIndicator color={colors.danger} />
+              ) : (
+                <>
+                  <Trash2 size={18} color={colors.danger} />
+                  <Text style={styles.deleteText}>Excluir conta</Text>
+                </>
+              )}
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       )}
@@ -193,6 +241,18 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
   },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.danger,
+  },
+  deleteText: { color: colors.danger, fontSize: fontSize.base, fontWeight: fontWeight.semibold },
   emailLabel: { fontSize: fontSize.xs, color: colors.textSecondary, marginBottom: 2 },
   emailValue: { fontSize: fontSize.base, color: colors.textPrimary, fontWeight: fontWeight.medium },
 });

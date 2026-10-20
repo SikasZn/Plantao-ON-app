@@ -115,6 +115,23 @@ export async function signOut() {
   if (error) throw error;
 }
 
+/**
+ * Exclui a conta e todos os dados do usuário logado. Quem faz o trabalho
+ * pesado é a Edge Function "delete-account" (precisa da service role pra
+ * apagar o usuário do Auth, o que o app nunca pode fazer sozinho). Depois
+ * disso a sessão local já não vale mais, então só limpamos o que ficou no
+ * aparelho.
+ */
+export async function deleteOwnAccount() {
+  const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error) throw error;
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    throw new Error(String(data.error));
+  }
+  // o usuário não existe mais no servidor: encerra só a sessão local
+  await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+}
+
 export async function sendPasswordResetEmail(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email);
   if (error) throw error;
