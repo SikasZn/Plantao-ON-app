@@ -1,5 +1,6 @@
 // src/screens/shifts/ShiftFormScreen.tsx
 import React, { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Alert,
   Modal,
@@ -55,6 +56,7 @@ function combineDateAndTime(base: Date, datePart?: Date, timePart?: Date) {
 }
 
 export function ShiftFormScreen({ navigation, route }: Props) {
+  const insets = useSafeAreaInsets();
   const existing = route.params?.shift;
   const isEditing = !!existing;
   const initialDate = route.params?.initialDate;
@@ -481,7 +483,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.flex}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <ArrowLeft size={24} color={colors.textPrimary} />

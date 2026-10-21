@@ -1,5 +1,6 @@
 // src/screens/auth/SignUpScreen.tsx
 import React, { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -53,6 +54,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
 export function SignUpScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { signUp } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,7 +102,7 @@ export function SignUpScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <ArrowLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>

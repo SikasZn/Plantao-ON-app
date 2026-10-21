@@ -7,6 +7,7 @@
 // nascimento e sexo (os dois últimos obrigatórios, igual no cadastro por
 // e-mail e na edição posterior em Perfil).
 import React, { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,6 +42,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function CompleteProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, completeProfileCompletion } = useAuth();
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,7 +97,7 @@ export function CompleteProfileScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrapper}>
           <Logo size={72} />
         </View>

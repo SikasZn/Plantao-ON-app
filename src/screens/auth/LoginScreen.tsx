@@ -1,5 +1,6 @@
 // src/screens/auth/LoginScreen.tsx
 import React, { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -39,6 +40,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -94,7 +96,7 @@ export function LoginScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrapper}>
           <Logo size={88} />
         </View>

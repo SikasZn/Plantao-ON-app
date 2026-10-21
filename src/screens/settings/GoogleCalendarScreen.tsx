@@ -124,14 +124,14 @@ export function GoogleCalendarScreen({ navigation }: Props) {
 
   if (isConnected === null) {
     return (
-      <SafeAreaView style={styles.flex} edges={['top']}>
+      <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
         <ActivityIndicator style={styles.loading} color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.flex} edges={['top']}>
+    <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
           <ArrowLeft size={24} color={colors.textPrimary} />

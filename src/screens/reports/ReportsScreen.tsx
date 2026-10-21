@@ -144,7 +144,7 @@ export function ReportsScreen({ navigation }: Props) {
   const isEmpty = filteredShifts.length === 0;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft size={24} color={colors.textPrimary} />

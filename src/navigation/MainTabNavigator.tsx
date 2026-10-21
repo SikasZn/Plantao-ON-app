@@ -1,5 +1,6 @@
 // src/navigation/MainTabNavigator.tsx
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Calendar, Wallet, Building2, MoreHorizontal } from 'lucide-react-native';
 import type { MainTabParamList } from './types';
@@ -13,13 +14,20 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabNavigator() {
+  // No Android com a barra de navegação de 3 botões (◀ ● ■) — ou com a
+  // navegação por gestos —, o app é desenhado por baixo dela. A altura fixa
+  // antiga deixava as abas escondidas atrás dos botões do sistema, então a
+  // barra agora soma a margem inferior real do aparelho (insets.bottom).
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 10);
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { height: 64, paddingBottom: 10, paddingTop: 6 },
+        tabBarStyle: { height: 54 + bottomPadding, paddingBottom: bottomPadding, paddingTop: 6 },
         tabBarLabelStyle: { fontSize: 11 },
       }}
     >

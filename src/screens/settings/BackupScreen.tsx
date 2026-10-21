@@ -68,7 +68,7 @@ export function BackupScreen({ navigation }: Props) {
   const isEmpty = shifts.length === 0 && hospitals.length === 0;
 
   return (
-    <SafeAreaView style={styles.flex} edges={['top']}>
+    <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
           <ArrowLeft size={24} color={colors.textPrimary} />

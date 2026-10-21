@@ -1,5 +1,6 @@
 // src/screens/hospitals/HospitalFormScreen.tsx
 import React, { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +26,7 @@ type HospitalFormData = z.infer<typeof hospitalFormSchema>;
 type Props = NativeStackScreenProps<MainStackParamList, 'HospitalForm'>;
 
 export function HospitalFormScreen({ navigation, route }: Props) {
+  const insets = useSafeAreaInsets();
   const existing = route.params?.hospital;
   const isEditing = !!existing;
 
@@ -92,7 +94,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
   }
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+    <ScrollView style={styles.flex} contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft size={24} color={colors.textPrimary} />
