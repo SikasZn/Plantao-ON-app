@@ -1,5 +1,5 @@
 // src/screens/dashboard/DashboardScreen.tsx
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,20 +12,10 @@ import { useShifts } from '../../hooks/useShifts';
 import { useHospitals } from '../../contexts/HospitalsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/Button';
-import { getOwnProfile } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import { formatDateTimeRange, durationInHours, formatDayNumber, formatMonthAbbrev } from '../../utils/date';
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
-import type { Shift, Hospital, ProfileSex } from '../../types/domain';
-
-// Item 17 do documento: o perfil agora tem sexo, então dá pra tratar
-// "Dr./Dra." direito aqui em vez de usar "Dr." fixo pra todo mundo. Sem sexo
-// informado (null ou 'unspecified'), fica só o primeiro nome, sem título.
-function greetingTitle(sex: ProfileSex | null): string {
-  if (sex === 'male') return 'Dr. ';
-  if (sex === 'female') return 'Dra. ';
-  return '';
-}
+import type { Shift, Hospital } from '../../types/domain';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Dashboard'>,
@@ -36,7 +26,6 @@ export function DashboardScreen({ navigation }: Props) {
   const { user } = useAuth();
   const { shifts, refetch } = useShifts();
   const { hospitals } = useHospitals();
-  const [sex, setSex] = useState<ProfileSex | null>(null);
 
   // recarrega sempre que a aba ganha foco (ex.: voltando do formulário de plantão)
   useFocusEffect(
@@ -44,18 +33,6 @@ export function DashboardScreen({ navigation }: Props) {
       refetch();
     }, [refetch])
   );
-
-  // só pro "Dr./Dra." do cumprimento — sem problema recarregar isso pouco
-  // (é 1 linha por chave primária), não precisa de refetch no foco como os
-  // plantões
-  useEffect(() => {
-    if (!user) return;
-    getOwnProfile(user.id)
-      .then((profile) => setSex(profile.sex))
-      .catch(() => {
-        // silenciosamente ignora — o cumprimento só fica sem título, nada quebra
-      });
-  }, [user]);
 
   const hospitalsById = useMemo(() => {
     const map = new Map<string, Hospital>();
@@ -117,7 +94,7 @@ export function DashboardScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{firstName ? `Olá, ${greetingTitle(sex)}${firstName}!` : 'Olá!'}</Text>
+            <Text style={styles.greeting}>{firstName ? `Olá, ${firstName}!` : 'Olá!'}</Text>
             <Text style={styles.subGreeting}>Sua semana em resumo</Text>
           </View>
           {/* decorativo por enquanto — liga com notificações reais no Passo 5 */}
