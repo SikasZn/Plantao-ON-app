@@ -16,7 +16,7 @@ import type { MainStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
 import { getOwnProfile, updateOwnProfile } from '../../services/authService';
 import { getInitials } from '../../utils/initials';
-import { toLocalDateKey } from '../../utils/date';
+import { isAdult, MIN_AGE, toLocalDateKey } from '../../utils/date';
 import { TextField } from '../../components/ui/TextField';
 import { SpecialtySelectField } from '../../components/ui/SpecialtySelectField';
 import { AvatarPicker } from '../../components/ui/AvatarPicker';
@@ -27,13 +27,18 @@ import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 const schema = z.object({
   fullName: z.string().min(2, 'Informe seu nome completo'),
   specialty: z.string().min(2, 'Selecione sua especialização'),
-  // Nenhum dos dois é obrigatório — quem já tinha conta antes do item 17 do
-  // documento fica com os dois em branco até preencher aqui.
+  // Obrigatórios: a data de nascimento e o sexo precisam ser informados
   birthDate: z
     .date()
     .nullable()
-    .refine((d) => !d || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro'),
-  sex: z.enum(['male', 'female', 'unspecified']).nullable(),
+    .refine((d): boolean => d !== null, 'Informe sua data de nascimento')
+    .refine((d): boolean => d === null || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro')
+    .refine((d): boolean => d === null || d.getTime() > Date.now() || isAdult(d), `É necessário ter ${MIN_AGE} anos ou mais`),
+  sex: z
+    .enum(['male', 'female', 'unspecified'])
+    .nullable()
+    .refine((v): boolean => v !== null, 'Selecione uma opção'),
+  // (contas antigas sem esses dados precisam preenchê-los para salvar)
 });
 
 type FormData = z.infer<typeof schema>;
@@ -194,7 +199,8 @@ export function ProfileScreen({ navigation }: Props) {
               onBirthDateChange={(date) => setValue('birthDate', date, { shouldValidate: true })}
               birthDateError={errors.birthDate?.message}
               sex={sex}
-              onSexChange={(newSex) => setValue('sex', newSex)}
+              onSexChange={(newSex) => setValue('sex', newSex, { shouldValidate: true })}
+              sexError={errors.sex?.message}
             />
 
             <Button label="Salvar alterações" onPress={handleSubmit(onSubmit)} loading={isSaving} />

@@ -20,6 +20,10 @@ type Props = CompositeScreenProps<
 export function SettingsScreen({ navigation }: Props) {
   const { signOut, user } = useAuth();
   const [profile, setProfile] = useState<OwnProfile | null>(null);
+  // true até a primeira resposta do perfil (sucesso ou falha). Enquanto isso
+  // não mostramos o e-mail da conta Google no lugar do nome — ele só entra
+  // como último recurso, se o perfil realmente não puder ser carregado.
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   // useEffect (só no mount) não bastava aqui: essa tela fica montada por
   // baixo das abas o tempo todo, então voltar da tela de Perfil depois de
@@ -31,7 +35,8 @@ export function SettingsScreen({ navigation }: Props) {
       if (!user) return;
       getOwnProfile(user.id)
         .then(setProfile)
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setProfileLoaded(true));
     }, [user])
   );
 
@@ -51,10 +56,16 @@ export function SettingsScreen({ navigation }: Props) {
           {profile?.avatarUrl ? (
             <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
           ) : (
-            <Text style={styles.avatarInitials}>{getInitials(profile?.fullName ?? user?.email ?? '')}</Text>
+            <Text style={styles.avatarInitials}>
+              {profileLoaded ? getInitials(profile?.fullName || user?.email || '') : ''}
+            </Text>
           )}
         </View>
-        <Text style={styles.profileName}>{profile?.fullName || user?.email}</Text>
+        {profileLoaded ? (
+          <Text style={styles.profileName}>{profile?.fullName || user?.email}</Text>
+        ) : (
+          <View style={styles.nameSkeleton} />
+        )}
         {!!profile?.specialty && <Text style={styles.profileSpecialty}>{profile.specialty}</Text>}
       </View>
 
@@ -118,6 +129,7 @@ const styles = StyleSheet.create({
   },
   avatarImage: { width: 88, height: 88 },
   avatarInitials: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.primary },
+  nameSkeleton: { width: 140, height: 20, borderRadius: radius.md, backgroundColor: colors.border },
   profileName: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.textPrimary },
   profileSpecialty: { fontSize: fontSize.sm, color: colors.textSecondary, marginTop: 2 },
   menuRow: {

@@ -87,6 +87,14 @@ export function calculateAge(birthDateKey: string): number {
   return age;
 }
 
+// Idade mínima para usar o app (os Termos de Uso exigem 18 anos ou mais).
+export const MIN_AGE = 18;
+
+// true quando a pessoa já completou MIN_AGE anos na data de hoje.
+export function isAdult(birthDate: Date): boolean {
+  return calculateAge(toLocalDateKey(birthDate)) >= MIN_AGE;
+}
+
 // Lista todas as chaves 'YYYY-MM-DD' entre duas datas (inclusive) — usada pra
 // marcar TODOS os dias que um plantão atravessa no calendário, não só o de início
 // (ex.: plantão de 22/09 07:00 até 23/09 07:00 marca 22 E 23).

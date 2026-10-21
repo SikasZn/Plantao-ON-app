@@ -1,5 +1,5 @@
 // src/screens/dashboard/DashboardScreen.tsx
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import type { MainTabParamList, MainStackParamList } from '../../navigation/type
 import { useShifts } from '../../hooks/useShifts';
 import { useHospitals } from '../../contexts/HospitalsContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { getOwnProfile } from '../../services/authService';
 import { Button } from '../../components/ui/Button';
 import { formatCurrency } from '../../utils/currency';
 import { formatDateTimeRange, durationInHours, formatDayNumber, formatMonthAbbrev } from '../../utils/date';
@@ -26,12 +27,23 @@ export function DashboardScreen({ navigation }: Props) {
   const { user } = useAuth();
   const { shifts, refetch } = useShifts();
   const { hospitals } = useHospitals();
+  // nome gravado no perfil do app (profiles.full_name) — não o nome da conta
+  // Google, que vem em user_metadata e pode ser diferente do que a pessoa
+  // confirmou no cadastro
+  const [profileName, setProfileName] = useState<string | null>(null);
 
-  // recarrega sempre que a aba ganha foco (ex.: voltando do formulário de plantão)
+  // recarrega sempre que a aba ganha foco (ex.: voltando do formulário de
+  // plantão ou da edição do perfil)
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+      if (!user) return;
+      getOwnProfile(user.id)
+        .then((profile) => setProfileName(profile.fullName.trim() || null))
+        .catch(() => {
+          // se falhar, o cumprimento só cai pro nome do metadata ou "Olá!"
+        });
+    }, [refetch, user])
   );
 
   const hospitalsById = useMemo(() => {
@@ -87,7 +99,9 @@ export function DashboardScreen({ navigation }: Props) {
       .slice(0, 3);
   }, [shifts]);
 
-  const firstName: string | undefined = user?.user_metadata?.full_name?.split(' ')?.[0];
+  // enquanto o perfil não carrega, não mostra o nome do Google (evita piscar
+  // o nome errado) — só aparece "Olá!" até chegar o nome do app
+  const firstName: string | undefined = profileName?.split(' ')?.[0];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

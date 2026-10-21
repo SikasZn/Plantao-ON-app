@@ -4,8 +4,8 @@
 // conta via Google/Apple (ver pendingProfileCompletion no AuthContext) — o
 // login social pula o formulário de cadastro, então faltam dados básicos que
 // o cadastro por e-mail já pede: nome confirmado, especialização, data de
-// nascimento e sexo (os dois últimos opcionais, igual no cadastro por e-mail
-// e na edição posterior em Perfil).
+// nascimento e sexo (os dois últimos obrigatórios, igual no cadastro por
+// e-mail e na edição posterior em Perfil).
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,18 +19,23 @@ import { SpecialtySelectField } from '../../components/ui/SpecialtySelectField';
 import { BirthDateAndSexFields } from '../../components/ui/BirthDateAndSexFields';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
-import { toLocalDateKey } from '../../utils/date';
+import { isAdult, MIN_AGE, toLocalDateKey } from '../../utils/date';
 import { colors, spacing, fontSize, fontWeight } from '../../theme';
 
 const schema = z.object({
   fullName: z.string().min(2, 'Informe seu nome completo'),
   specialty: z.string().min(2, 'Selecione sua especialização'),
-  // Nenhum dos dois é obrigatório aqui — dá pra preencher depois no Perfil
+  // Obrigatórios: a data de nascimento e o sexo precisam ser informados
   birthDate: z
     .date()
     .nullable()
-    .refine((d) => !d || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro'),
-  sex: z.enum(['male', 'female', 'unspecified']).nullable(),
+    .refine((d): boolean => d !== null, 'Informe sua data de nascimento')
+    .refine((d): boolean => d === null || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro')
+    .refine((d): boolean => d === null || d.getTime() > Date.now() || isAdult(d), `É necessário ter ${MIN_AGE} anos ou mais`),
+  sex: z
+    .enum(['male', 'female', 'unspecified'])
+    .nullable()
+    .refine((v): boolean => v !== null, 'Selecione uma opção'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -130,7 +135,8 @@ export function CompleteProfileScreen() {
               onBirthDateChange={(date) => setValue('birthDate', date, { shouldValidate: true })}
               birthDateError={errors.birthDate?.message}
               sex={sex}
-              onSexChange={(newSex) => setValue('sex', newSex)}
+              onSexChange={(newSex) => setValue('sex', newSex, { shouldValidate: true })}
+              sexError={errors.sex?.message}
             />
 
             <Button label="Concluir cadastro" onPress={handleSubmit(onSubmit)} loading={isSubmitting} />

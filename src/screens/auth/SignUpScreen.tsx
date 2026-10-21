@@ -21,7 +21,7 @@ import { TextField } from '../../components/ui/TextField';
 import { SpecialtySelectField } from '../../components/ui/SpecialtySelectField';
 import { BirthDateAndSexFields } from '../../components/ui/BirthDateAndSexFields';
 import { Button } from '../../components/ui/Button';
-import { toLocalDateKey } from '../../utils/date';
+import { isAdult, MIN_AGE, toLocalDateKey } from '../../utils/date';
 import { colors, spacing, fontSize, fontWeight } from '../../theme';
 
 const signUpSchema = z
@@ -31,13 +31,17 @@ const signUpSchema = z
     email: z.string().min(1, 'Informe seu e-mail').email('E-mail inválido'),
     password: z.string().min(6, 'Mínimo de 6 caracteres'),
     confirmPassword: z.string(),
-    // Nenhum dos dois é obrigatório no cadastro — dá pra preencher depois no
-    // Perfil também
+    // Obrigatórios: a data de nascimento e o sexo precisam ser informados
     birthDate: z
       .date()
       .nullable()
-      .refine((d) => !d || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro'),
-    sex: z.enum(['male', 'female', 'unspecified']).nullable(),
+      .refine((d): boolean => d !== null, 'Informe sua data de nascimento')
+      .refine((d): boolean => d === null || d.getTime() <= Date.now(), 'A data de nascimento não pode ser no futuro')
+      .refine((d): boolean => d === null || d.getTime() > Date.now() || isAdult(d), `É necessário ter ${MIN_AGE} anos ou mais`),
+    sex: z
+      .enum(['male', 'female', 'unspecified'])
+      .nullable()
+      .refine((v): boolean => v !== null, 'Selecione uma opção'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',
@@ -133,7 +137,8 @@ export function SignUpScreen({ navigation }: Props) {
             onBirthDateChange={(date) => setValue('birthDate', date, { shouldValidate: true })}
             birthDateError={errors.birthDate?.message}
             sex={sex}
-            onSexChange={(newSex) => setValue('sex', newSex)}
+            onSexChange={(newSex) => setValue('sex', newSex, { shouldValidate: true })}
+            sexError={errors.sex?.message}
           />
 
           <Controller

@@ -4,8 +4,8 @@
 // pedem esses dados (item 17 do documento, estendido): cadastro por e-mail
 // (SignUpScreen), completar perfil no primeiro login via Google/Apple
 // (CompleteProfileScreen) e edição posterior (ProfileScreen). Os dois campos
-// são opcionais em todo lugar — 'unspecified' é uma escolha explícita de
-// "prefiro não informar", diferente de deixar em branco (null).
+// são obrigatórios em todo lugar — 'unspecified' continua sendo uma escolha
+// explícita ("prefiro não informar"), mas o campo não pode ficar em branco.
 //
 // O seletor de data no iOS usa Modal (não um container posicionado como
 // "irmão" da tela, como no resto do app) de propósito: esse componente é
@@ -29,7 +29,8 @@ interface BirthDateAndSexFieldsProps {
   onBirthDateChange: (date: Date) => void;
   birthDateError?: string;
   sex: ProfileSex | null;
-  onSexChange: (sex: ProfileSex | null) => void;
+  onSexChange: (sex: ProfileSex) => void;
+  sexError?: string;
 }
 
 export function BirthDateAndSexFields({
@@ -38,6 +39,7 @@ export function BirthDateAndSexFields({
   birthDateError,
   sex,
   onSexChange,
+  sexError,
 }: BirthDateAndSexFieldsProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -57,7 +59,7 @@ export function BirthDateAndSexFields({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Data de nascimento (opcional)</Text>
+      <Text style={styles.label}>Data de nascimento</Text>
       <Pressable style={styles.selectField} onPress={() => setIsPickerOpen(true)}>
         <Text style={birthDate ? styles.selectFieldText : styles.selectPlaceholder}>
           {birthDate ? formatDate(birthDate.toISOString()) : 'Selecionar data'}
@@ -66,18 +68,19 @@ export function BirthDateAndSexFields({
       </Pressable>
       {!!birthDateError && <Text style={styles.error}>{birthDateError}</Text>}
 
-      <Text style={styles.label}>Sexo (opcional)</Text>
+      <Text style={styles.label}>Sexo</Text>
       <View style={styles.sexRow}>
         {SEX_OPTIONS.map((option) => (
           <TouchableOpacity
             key={option.value}
             style={[styles.sexChip, sex === option.value && styles.sexChipActive]}
-            onPress={() => onSexChange(sex === option.value ? null : option.value)}
+            onPress={() => onSexChange(option.value)}
           >
             <Text style={[styles.sexChipText, sex === option.value && styles.sexChipTextActive]}>{option.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
+      {!!sexError && <Text style={styles.error}>{sexError}</Text>}
 
       {Platform.OS === 'ios' ? (
         <Modal visible={isPickerOpen} transparent animationType="slide" onRequestClose={() => setIsPickerOpen(false)}>
