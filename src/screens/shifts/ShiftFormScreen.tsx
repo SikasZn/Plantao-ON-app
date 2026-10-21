@@ -189,7 +189,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
 
   function validate(): boolean {
     const nextErrors: Record<string, string> = {};
-    if (entryType === 'shift' && !hospitalId) nextErrors.hospital = 'Escolha um hospital';
+    if (entryType === 'shift' && !hospitalId) nextErrors.hospital = 'Escolha um local de trabalho';
     if (entryType === 'commitment' && !shiftType.trim()) nextErrors.shiftType = 'Informe o nome do compromisso';
     if (endAt.getTime() <= startAt.getTime()) nextErrors.end = 'O fim precisa ser depois do início';
     if (entryType === 'shift' && (!valueCents || Number(valueCents) <= 0)) {
@@ -245,7 +245,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
     // nome usado no lembrete e no evento da Google Agenda — pra um
     // Compromisso não existe hospital, então usa o próprio nome digitado
     const entryLabel =
-      entryType === 'shift' ? selectedHospital?.name ?? 'Hospital' : shiftType.trim() || 'Compromisso';
+      entryType === 'shift' ? selectedHospital?.name ?? 'Local' : shiftType.trim() || 'Compromisso';
 
     // Ocorrência de uma série recorrente — pergunta o escopo antes de
     // aplicar a edição (item 3 do documento: "editar somente aquele" vs
@@ -519,7 +519,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
                   <Text style={styles.selectFieldText}>{selectedHospital.name}</Text>
                 </View>
               ) : (
-                <Text style={styles.selectPlaceholder}>Selecione um hospital</Text>
+                <Text style={styles.selectPlaceholder}>Selecione um local de trabalho</Text>
               )}
               <ChevronDown size={18} color={colors.textSecondary} />
             </Pressable>
@@ -611,7 +611,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
               editable={!isValueComputed}
             />
             {isValueComputed && (
-              <Text style={styles.hint}>Calculado automaticamente pelo valor/hora do hospital</Text>
+              <Text style={styles.hint}>Calculado automaticamente pelo valor/hora do local de trabalho</Text>
             )}
 
             <Text style={styles.label}>Status</Text>
@@ -835,7 +835,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
             {isPassed && (
               <TextField
                 label="Nome do colega"
-                placeholder="Ex.: Dr. Fulano"
+                placeholder="Ex.: Fulano"
                 value={passedToName}
                 onChangeText={setPassedToName}
                 error={errors.passedTo}
@@ -889,7 +889,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
       >
         <Pressable style={styles.modalBackdrop} onPress={() => setIsHospitalPickerOpen(false)}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Selecione um hospital</Text>
+            <Text style={styles.modalTitle}>Selecione um local de trabalho</Text>
             <ScrollView>
               {hospitals.map((hospital) => (
                 <TouchableOpacity
@@ -906,7 +906,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
                 </TouchableOpacity>
               ))}
               {hospitals.length === 0 && (
-                <Text style={styles.emptyHospitals}>Cadastre um hospital primeiro na aba Hospitais.</Text>
+                <Text style={styles.emptyHospitals}>Cadastre um local de trabalho primeiro na aba Locais.</Text>
               )}
             </ScrollView>
           </View>

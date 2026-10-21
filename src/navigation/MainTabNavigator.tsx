@@ -41,7 +41,7 @@ export function MainTabNavigator() {
       <Tab.Screen
         name="Hospitals"
         component={HospitalsScreen}
-        options={{ title: 'Hospitais', tabBarIcon: ({ color, size }) => <Building2 color={color} size={size} /> }}
+        options={{ title: 'Locais', tabBarIcon: ({ color, size }) => <Building2 color={color} size={size} /> }}
       />
       <Tab.Screen
         name="Settings"

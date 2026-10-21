@@ -1,6 +1,6 @@
 // src/services/backupService.ts
 //
-// Exporta uma cópia de todos os dados do usuário (hospitais, plantões e
+// Exporta uma cópia de todos os dados do usuário (locais de trabalho, plantões e
 // perfil) como um arquivo .json. Isso NÃO é um mecanismo de sincronização
 // entre aparelhos — os dados já vivem no Supabase e já estão disponíveis em
 // qualquer dispositivo em que a pessoa faça login (ver BackupScreen pra
@@ -45,7 +45,7 @@ async function emailFile(uri: string) {
   }
   await MailComposer.composeAsync({
     subject: 'Backup dos meus dados — Plantão ON',
-    body: 'Segue em anexo uma cópia dos seus dados do Plantão ON (hospitais, plantões e perfil).',
+    body: 'Segue em anexo uma cópia dos seus dados do Plantão ON (locais de trabalho, plantões e perfil).',
     attachments: [uri],
   });
 }

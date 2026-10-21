@@ -200,7 +200,7 @@ function UpcomingShiftRow({
     : isCommitment
       ? shift.color ?? colors.textSecondary
       : hospital?.color ?? colors.textSecondary;
-  const title = isCommitment ? shift.shift_type?.trim() || 'Compromisso' : hospital?.name ?? 'Hospital removido';
+  const title = isCommitment ? shift.shift_type?.trim() || 'Compromisso' : hospital?.name ?? 'Local removido';
 
   return (
     <Pressable style={styles.upcomingRow} onPress={onPress}>

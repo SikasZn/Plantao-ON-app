@@ -15,7 +15,7 @@ import { ColorPickerModal } from '../../components/ui/ColorPickerModal';
 import { colors, spacing, radius, fontSize, fontWeight, hospitalColorPalette } from '../../theme';
 
 const hospitalFormSchema = z.object({
-  name: z.string().min(2, 'Informe o nome do hospital'),
+  name: z.string().min(2, 'Informe o nome do local de trabalho'),
   color: z.string().min(1, 'Escolha uma cor'),
   defaultHourlyRate: z.string().optional(),
 });
@@ -74,7 +74,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
 
   function handleDelete() {
     if (!existing) return;
-    Alert.alert('Excluir hospital', 'Tem certeza que deseja excluir este hospital?', [
+    Alert.alert('Excluir local de trabalho', 'Tem certeza que deseja excluir este local de trabalho?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
@@ -97,7 +97,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>{isEditing ? 'Editar hospital' : 'Novo hospital'}</Text>
+        <Text style={styles.title}>{isEditing ? 'Editar local de trabalho' : 'Novo local de trabalho'}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -106,7 +106,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
         name="name"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextField
-            label="Nome do hospital"
+            label="Nome do local de trabalho"
             placeholder="Nome do Lugar"
             onBlur={onBlur}
             onChangeText={onChange}
@@ -161,7 +161,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       {isEditing && (
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
           <Trash2 size={18} color={colors.danger} />
-          <Text style={styles.deleteText}>Excluir hospital</Text>
+          <Text style={styles.deleteText}>Excluir local de trabalho</Text>
         </TouchableOpacity>
       )}
 

@@ -167,7 +167,7 @@ export function FinancialScreen() {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Por hospital</Text>
+        <Text style={styles.sectionTitle}>Por local de trabalho</Text>
         {byHospital.length === 0 ? (
           <Text style={styles.emptyText}>Nenhum plantão nesse período.</Text>
         ) : (
@@ -175,7 +175,7 @@ export function FinancialScreen() {
             <View key={hospital?.id ?? 'sem-hospital'} style={styles.hospitalRow}>
               <View style={[styles.dot, { backgroundColor: hospital?.color ?? colors.textSecondary }]} />
               <View style={styles.hospitalInfo}>
-                <Text style={styles.hospitalName}>{hospital?.name ?? 'Hospital removido'}</Text>
+                <Text style={styles.hospitalName}>{hospital?.name ?? 'Local removido'}</Text>
                 <Text style={styles.hospitalCount}>
                   {count} {count === 1 ? 'plantão' : 'plantões'} · {hours.toFixed(0)}h
                 </Text>

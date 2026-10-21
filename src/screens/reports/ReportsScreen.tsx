@@ -161,7 +161,7 @@ export function ReportsScreen({ navigation }: Props) {
           <PeriodTab label="Todos" active={period === 'all'} onPress={() => setPeriod('all')} />
         </View>
 
-        <Text style={styles.label}>Hospital</Text>
+        <Text style={styles.label}>Local de trabalho</Text>
         <Pressable style={styles.hospitalField} onPress={() => setIsHospitalPickerOpen(true)}>
           {selectedHospital ? (
             <View style={styles.selectedHospital}>
@@ -169,7 +169,7 @@ export function ReportsScreen({ navigation }: Props) {
               <Text style={styles.hospitalFieldText}>{selectedHospital.name}</Text>
             </View>
           ) : (
-            <Text style={styles.hospitalFieldText}>Todos os hospitais</Text>
+            <Text style={styles.hospitalFieldText}>Todos os locais</Text>
           )}
           <ChevronDown size={18} color={colors.textSecondary} />
         </Pressable>
@@ -245,7 +245,7 @@ export function ReportsScreen({ navigation }: Props) {
       >
         <Pressable style={styles.modalBackdrop} onPress={() => setIsHospitalPickerOpen(false)}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Filtrar por hospital</Text>
+            <Text style={styles.modalTitle}>Filtrar por local de trabalho</Text>
             <ScrollView>
               <TouchableOpacity
                 style={styles.modalRow}
@@ -254,7 +254,7 @@ export function ReportsScreen({ navigation }: Props) {
                   setIsHospitalPickerOpen(false);
                 }}
               >
-                <Text style={styles.modalRowText}>Todos os hospitais</Text>
+                <Text style={styles.modalRowText}>Todos os locais</Text>
                 {!hospitalFilter && <Check size={18} color={colors.primary} />}
               </TouchableOpacity>
               {hospitals.map((hospital) => (
@@ -272,7 +272,7 @@ export function ReportsScreen({ navigation }: Props) {
                 </TouchableOpacity>
               ))}
               {hospitals.length === 0 && (
-                <Text style={styles.emptyHospitals}>Cadastre um hospital primeiro na aba Hospitais.</Text>
+                <Text style={styles.emptyHospitals}>Cadastre um local de trabalho primeiro na aba Locais.</Text>
               )}
             </ScrollView>
           </View>

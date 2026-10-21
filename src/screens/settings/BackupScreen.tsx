@@ -83,13 +83,13 @@ export function BackupScreen({ navigation }: Props) {
           <Text style={styles.infoText}>
             Tudo que você cadastra no Plantão ON é salvo automaticamente nos nossos servidores assim que você salva
             — não existe risco de perder nada ao trocar de celular ou desinstalar o app. É só entrar de novo com a
-            mesma conta que todos os seus plantões e hospitais aparecem de volta.
+            mesma conta que todos os seus plantões e locais de trabalho aparecem de volta.
           </Text>
         </View>
 
         <Text style={styles.sectionLabel}>Exportar meus dados</Text>
         <Text style={styles.sectionText}>
-          Gera um arquivo com uma cópia de todos os seus hospitais, plantões e dados de perfil — útil pra guardar
+          Gera um arquivo com uma cópia de todos os seus locais de trabalho, plantões e dados de perfil — útil pra guardar
           por conta própria, levar pra outro sistema ou mandar pro seu contador.
         </Text>
 
@@ -122,7 +122,7 @@ export function BackupScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         {isEmpty && (
-          <Text style={styles.emptyText}>Cadastre ao menos um hospital ou plantão pra poder exportar.</Text>
+          <Text style={styles.emptyText}>Cadastre ao menos um local de trabalho ou plantão pra poder exportar.</Text>
         )}
       </ScrollView>
     </SafeAreaView>

@@ -31,7 +31,7 @@ const FEATURES = [
   {
     icon: Building2,
     color: colors.primaryDark,
-    title: 'Hospitais por cores',
+    title: 'Locais de trabalho por cores',
     description: 'Identifique seus locais de trabalho com facilidade.',
   },
   {

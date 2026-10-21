@@ -107,7 +107,7 @@ export function CompleteProfileScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextField
                   label="Nome completo"
-                  placeholder="Dr. José Milton"
+                  placeholder="José Milton"
                   icon={<User size={20} color={colors.textSecondary} />}
                   onBlur={onBlur}
                   onChangeText={onChange}

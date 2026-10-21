@@ -37,7 +37,7 @@ export function HospitalsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Meus Hospitais</Text>
+        <Text style={styles.title}>Meus Locais de Trabalho</Text>
       </View>
 
       <View style={styles.searchWrapper}>
@@ -45,7 +45,7 @@ export function HospitalsScreen({ navigation }: Props) {
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar hospital..."
+          placeholder="Buscar local de trabalho..."
           placeholderTextColor={colors.textSecondary}
           style={styles.searchInput}
         />
@@ -62,7 +62,7 @@ export function HospitalsScreen({ navigation }: Props) {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <Text style={styles.emptyText}>
-              {search ? 'Nenhum hospital encontrado.' : 'Você ainda não cadastrou nenhum hospital.'}
+              {search ? 'Nenhum local de trabalho encontrado.' : 'Você ainda não cadastrou nenhum local de trabalho.'}
             </Text>
           }
           renderItem={({ item }) => (
@@ -72,7 +72,7 @@ export function HospitalsScreen({ navigation }: Props) {
       )}
 
       <Button
-        label="Adicionar hospital"
+        label="Adicionar local de trabalho"
         icon={<Plus size={20} color={colors.textInverse} />}
         onPress={() => navigation.navigate('HospitalForm')}
         style={styles.addButton}

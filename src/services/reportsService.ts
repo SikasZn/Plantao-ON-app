@@ -26,10 +26,10 @@ export interface ReportTotals {
 
 function hospitalName(shift: Shift, hospitalsById: Map<string, Hospital>): string {
   // Compromisso não tem hospital (hospital_id null) — mostra o nome digitado
-  // nele em vez de "Hospital removido" (que soaria como um hospital
+  // nele em vez de "Local removido" (que soaria como um hospital
   // excluído, não como "isso nunca teve hospital")
   if (!shift.hospital_id) return shift.shift_type?.trim() || 'Compromisso';
-  return hospitalsById.get(shift.hospital_id)?.name ?? 'Hospital removido';
+  return hospitalsById.get(shift.hospital_id)?.name ?? 'Local removido';
 }
 
 function sanitizeFileName(text: string): string {
@@ -75,7 +75,7 @@ function escapeCsvField(value: string): string {
 }
 
 function buildCsvFile(shifts: Shift[], hospitalsById: Map<string, Hospital>, periodLabel: string): string {
-  const header = ['Data', 'Hospital', 'Tipo', 'Início', 'Fim', 'Horas', 'Valor', 'Status'];
+  const header = ['Data', 'Local', 'Tipo', 'Início', 'Fim', 'Horas', 'Valor', 'Status'];
   const lines = shifts.map((shift) => [
     formatDate(shift.start_at),
     hospitalName(shift, hospitalsById),
@@ -170,9 +170,9 @@ async function buildPdfFile(
   const hospitalSectionHtml =
     byHospital.size > 1
       ? `
-        <h2>Por hospital</h2>
+        <h2>Por local de trabalho</h2>
         <table>
-          <tr><th>Hospital</th><th>Plantões</th><th>Horas</th><th>Total</th></tr>
+          <tr><th>Local</th><th>Plantões</th><th>Horas</th><th>Total</th></tr>
           ${hospitalRowsHtml}
         </table>`
       : '';
@@ -249,7 +249,7 @@ async function buildPdfFile(
 
         <h2>Plantões detalhados</h2>
         <table>
-          <tr><th>Data</th><th>Hospital</th><th>Tipo</th><th>Horário</th><th>Horas</th><th>Valor</th><th>Status</th></tr>
+          <tr><th>Data</th><th>Local</th><th>Tipo</th><th>Horário</th><th>Horas</th><th>Valor</th><th>Status</th></tr>
           ${shiftRowsHtml}
         </table>
       </body>

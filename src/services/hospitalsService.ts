@@ -32,7 +32,7 @@ export async function deleteHospital(id: string): Promise<void> {
   if (error) {
     // 23503 = violação de foreign key: existem plantões apontando pra esse hospital
     if (error.code === '23503') {
-      throw new Error('Não é possível excluir: existem plantões vinculados a este hospital.');
+      throw new Error('Não é possível excluir: existem plantões vinculados a este local de trabalho.');
     }
     throw error;
   }
