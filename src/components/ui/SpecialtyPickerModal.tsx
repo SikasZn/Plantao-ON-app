@@ -6,8 +6,10 @@
 // algo que não está na lista, aparece uma opção "Usar ..." pra confirmar o
 // valor digitado mesmo assim (cobre residentes, áreas de atuação, etc.).
 import React, { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Check, Search, X } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardVisible } from '../../hooks/useKeyboardVisible';
 import { colors, radius, spacing, fontSize, fontWeight } from '../../theme';
 import { MEDICAL_SPECIALTIES } from '../../utils/medicalSpecialties';
 
@@ -20,6 +22,8 @@ interface SpecialtyPickerModalProps {
 
 export function SpecialtyPickerModal({ visible, initialValue, onClose, onConfirm }: SpecialtyPickerModalProps) {
   const [query, setQuery] = useState('');
+  const insets = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardVisible();
 
   // reabre sempre com a busca limpa, não com o que sobrou da última vez que
   // o modal foi usado
@@ -45,8 +49,12 @@ export function SpecialtyPickerModal({ visible, initialValue, onClose, onConfirm
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={[styles.sheet, { paddingBottom: spacing.lg + (keyboardVisible ? 0 : insets.bottom) }]}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.header}>
             <Text style={styles.title}>Especialização</Text>
             <TouchableOpacity onPress={onClose} hitSlop={12}>
@@ -96,11 +104,13 @@ export function SpecialtyPickerModal({ visible, initialValue, onClose, onConfirm
           />
         </Pressable>
       </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.surface,

@@ -19,7 +19,8 @@ export function MainTabNavigator() {
   // antiga deixava as abas escondidas atrás dos botões do sistema, então a
   // barra agora soma a margem inferior real do aparelho (insets.bottom).
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, 10);
+  // +10 deixa as abas um pouco acima dos botões do sistema
+  const bottomPadding = Math.max(insets.bottom, 10) + 10;
 
   return (
     <Tab.Navigator

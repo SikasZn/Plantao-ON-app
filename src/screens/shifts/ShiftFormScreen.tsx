@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -482,8 +483,8 @@ export function ShiftFormScreen({ navigation, route }: Props) {
       : 'time';
 
   return (
-    <View style={styles.flex}>
-      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]}>
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <ArrowLeft size={24} color={colors.textPrimary} />
@@ -513,7 +514,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
 
         {entryType === 'shift' ? (
           <>
-            <Text style={styles.label}>Hospital / Local</Text>
+            <Text style={styles.label}>Local de trabalho</Text>
             <Pressable style={styles.selectField} onPress={() => setIsHospitalPickerOpen(true)}>
               {selectedHospital ? (
                 <View style={styles.selectedHospital}>
@@ -890,7 +891,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
         onRequestClose={() => setIsHospitalPickerOpen(false)}
       >
         <Pressable style={styles.modalBackdrop} onPress={() => setIsHospitalPickerOpen(false)}>
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { paddingBottom: spacing.lg + insets.bottom }]}>
             <Text style={styles.modalTitle}>Selecione um local de trabalho</Text>
             <ScrollView>
               {hospitals.map((hospital) => (
@@ -924,7 +925,7 @@ export function ShiftFormScreen({ navigation, route }: Props) {
           setIsCommitmentColorPickerOpen(false);
         }}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
