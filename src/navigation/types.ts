@@ -23,4 +23,5 @@ export type MainStackParamList = {
   Profile: undefined;
   GoogleCalendar: undefined;
   Backup: undefined;
+  Subscription: undefined;
 };

@@ -9,6 +9,7 @@ import { ReportsScreen } from '../screens/reports/ReportsScreen';
 import { ProfileScreen } from '../screens/settings/ProfileScreen';
 import { GoogleCalendarScreen } from '../screens/settings/GoogleCalendarScreen';
 import { BackupScreen } from '../screens/settings/BackupScreen';
+import { SubscriptionScreen } from '../screens/settings/SubscriptionScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -30,6 +31,7 @@ export function MainNavigator() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="GoogleCalendar" component={GoogleCalendarScreen} />
       <Stack.Screen name="Backup" component={BackupScreen} />
+      <Stack.Screen name="Subscription" component={SubscriptionScreen} />
     </Stack.Navigator>
   );
 }

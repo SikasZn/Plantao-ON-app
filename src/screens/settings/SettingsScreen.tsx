@@ -5,9 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, type CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { BarChart3, Bell, Calendar, ChevronRight, Database, LogOut, UserCircle } from 'lucide-react-native';
+import { BarChart3, Bell, Calendar, ChevronRight, CreditCard, Database, LogOut, UserCircle } from 'lucide-react-native';
 import type { MainTabParamList, MainStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { getOwnProfile, type OwnProfile } from '../../services/authService';
 import { getInitials } from '../../utils/initials';
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
@@ -19,6 +20,7 @@ type Props = CompositeScreenProps<
 
 export function SettingsScreen({ navigation }: Props) {
   const { signOut, user } = useAuth();
+  const { enabled: subscriptionsEnabled } = useSubscription();
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   // true até a primeira resposta do perfil (sucesso ou falha). Enquanto isso
   // não mostramos o e-mail da conta Google no lugar do nome — ele só entra
@@ -94,6 +96,14 @@ export function SettingsScreen({ navigation }: Props) {
         label="Backup e sincronização"
         onPress={() => navigation.navigate('Backup')}
       />
+
+      {subscriptionsEnabled && (
+        <MenuRow
+          icon={<CreditCard size={20} color={colors.textPrimary} />}
+          label="Assinatura"
+          onPress={() => navigation.navigate('Subscription')}
+        />
+      )}
 
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <LogOut size={20} color={colors.danger} />

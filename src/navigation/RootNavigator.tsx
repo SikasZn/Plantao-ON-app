@@ -8,6 +8,7 @@ import { MainNavigator } from './MainNavigator';
 import { SplashScreen } from '../screens/splash/SplashScreen';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { CompleteProfileScreen } from '../screens/onboarding/CompleteProfileScreen';
+import { SubscriptionGate } from '../screens/subscription/SubscriptionGate';
 
 // Tempo mínimo que a tela de carregamento fica visível, em ms. A checagem de
 // sessão salva (SecureStore/AsyncStorage) costuma ser quase instantânea, e
@@ -44,9 +45,13 @@ export function RootNavigator() {
         ) : pendingOnboarding ? (
           <OnboardingScreen onFinish={completeOnboarding} />
         ) : (
-          <HospitalsProvider>
-            <MainNavigator />
-          </HospitalsProvider>
+          // o app só abre pra quem tem assinatura (ou teste grátis); sem
+          // chave do RevenueCat o gate libera tudo
+          <SubscriptionGate>
+            <HospitalsProvider>
+              <MainNavigator />
+            </HospitalsProvider>
+          </SubscriptionGate>
         )
       ) : (
         <AuthNavigator />
