@@ -19,7 +19,7 @@ import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 import type { Hospital } from '../../types/domain';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Reports'>;
-type Period = 'month' | 'year' | 'all';
+type Period = 'month' | 'year';
 type BusyAction = 'csv-share' | 'csv-email' | 'pdf-share' | 'pdf-email' | null;
 
 export function ReportsScreen({ navigation }: Props) {
@@ -41,16 +41,13 @@ export function ReportsScreen({ navigation }: Props) {
   const now = useMemo(() => new Date(), []);
 
   const filteredShifts = useMemo(() => {
-    let list = shifts;
-    if (period !== 'all') {
-      list = list.filter((shift) => {
-        const d = new Date(shift.start_at);
-        if (period === 'month') {
-          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-        }
-        return d.getFullYear() === now.getFullYear();
-      });
-    }
+    let list = shifts.filter((shift) => {
+      const d = new Date(shift.start_at);
+      if (period === 'month') {
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }
+      return d.getFullYear() === now.getFullYear();
+    });
     if (hospitalFilter) {
       list = list.filter((shift) => shift.hospital_id === hospitalFilter);
     }
@@ -58,11 +55,7 @@ export function ReportsScreen({ navigation }: Props) {
   }, [shifts, period, now, hospitalFilter]);
 
   const periodLabel =
-    period === 'all'
-      ? 'Todos os períodos'
-      : period === 'year'
-        ? formatYearOnly(now.toISOString())
-        : formatMonthYear(now.toISOString());
+    period === 'year' ? formatYearOnly(now.toISOString()) : formatMonthYear(now.toISOString());
 
   // título usado no preview, no nome do arquivo e no cabeçalho do PDF —
   // com hospital filtrado, deixa explícito que o relatório é só daquele
@@ -158,7 +151,6 @@ export function ReportsScreen({ navigation }: Props) {
         <View style={styles.periodTabs}>
           <PeriodTab label="Mês atual" active={period === 'month'} onPress={() => setPeriod('month')} />
           <PeriodTab label="Ano atual" active={period === 'year'} onPress={() => setPeriod('year')} />
-          <PeriodTab label="Todos" active={period === 'all'} onPress={() => setPeriod('all')} />
         </View>
 
         <Text style={styles.label}>Local de trabalho</Text>

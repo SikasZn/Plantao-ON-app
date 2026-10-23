@@ -2,8 +2,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '../../navigation/types';
+import { isOverdue } from '../../utils/payments';
 import { useShifts } from '../../hooks/useShifts';
 import { useHospitals } from '../../contexts/HospitalsContext';
 import { formatCurrency } from '../../utils/currency';
@@ -11,11 +14,12 @@ import { formatMonthYear, formatYearOnly, durationInHours } from '../../utils/da
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 import type { Hospital } from '../../types/domain';
 
-type Period = 'month' | 'year' | 'all';
+type Period = 'month' | 'year';
 
 export function FinancialScreen() {
   const { shifts, refetch } = useShifts();
   const { hospitals } = useHospitals();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
   const [period, setPeriod] = useState<Period>('month');
   const [referenceDate, setReferenceDate] = useState(new Date());
@@ -51,7 +55,6 @@ export function FinancialScreen() {
   }
 
   const filteredShifts = useMemo(() => {
-    if (period === 'all') return shifts;
     return shifts.filter((shift) => {
       const d = new Date(shift.start_at);
       if (period === 'month') {
@@ -90,6 +93,11 @@ export function FinancialScreen() {
     [realFilteredShifts]
   );
 
+  // Atrasados: de todos os tempos (não só do período filtrado) — um
+  // pagamento esquecido de meses atrás continua devendo.
+  const overdueShifts = useMemo(() => shifts.filter((s) => isOverdue(s)), [shifts]);
+  const overdueTotal = overdueShifts.reduce((sum, s) => sum + (s.total_value ?? 0), 0);
+
   const byHospital = useMemo(() => {
     const map = new Map<string, { hospital?: Hospital; total: number; count: number; hours: number }>();
     filteredShifts.forEach((shift) => {
@@ -120,11 +128,9 @@ export function FinancialScreen() {
       <View style={styles.periodTabs}>
         <PeriodTab label="Mês" active={period === 'month'} onPress={() => setPeriod('month')} />
         <PeriodTab label="Ano" active={period === 'year'} onPress={() => setPeriod('year')} />
-        <PeriodTab label="Todos" active={period === 'all'} onPress={() => setPeriod('all')} />
       </View>
 
-      {period !== 'all' && (
-        <View style={styles.periodNav}>
+      <View style={styles.periodNav}>
           <TouchableOpacity onPress={goToPrevious} hitSlop={12}>
             <ChevronLeft size={22} color={colors.textPrimary} />
           </TouchableOpacity>
@@ -136,8 +142,7 @@ export function FinancialScreen() {
           <TouchableOpacity onPress={goToNext} hitSlop={12}>
             <ChevronRight size={22} color={colors.textPrimary} />
           </TouchableOpacity>
-        </View>
-      )}
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.summaryCard}>
@@ -167,12 +172,39 @@ export function FinancialScreen() {
           </View>
         </View>
 
+        {overdueShifts.length > 0 && (
+          <TouchableOpacity style={styles.overdueCard} onPress={() => navigation.navigate('Overdue')} activeOpacity={0.8}>
+            <AlertCircle size={22} color={colors.danger} />
+            <View style={styles.overdueInfo}>
+              <Text style={styles.overdueTitle}>Pagamentos atrasados</Text>
+              <Text style={styles.overdueSub}>
+                {overdueShifts.length} {overdueShifts.length === 1 ? 'plantão' : 'plantões'} sem marcar como pago
+              </Text>
+            </View>
+            <Text style={styles.overdueValue}>{formatCurrency(overdueTotal)}</Text>
+            <ChevronRight size={18} color={colors.danger} />
+          </TouchableOpacity>
+        )}
+
         <Text style={styles.sectionTitle}>Por local de trabalho</Text>
         {byHospital.length === 0 ? (
           <Text style={styles.emptyText}>Nenhum plantão nesse período.</Text>
         ) : (
           byHospital.map(({ hospital, total, count, hours }) => (
-            <View key={hospital?.id ?? 'sem-hospital'} style={styles.hospitalRow}>
+            <TouchableOpacity
+              key={hospital?.id ?? 'sem-hospital'}
+              style={styles.hospitalRow}
+              disabled={!hospital}
+              activeOpacity={0.7}
+              onPress={() =>
+                hospital &&
+                navigation.navigate('HospitalShifts', {
+                  hospitalId: hospital.id,
+                  period,
+                  referenceDate: referenceDate.toISOString(),
+                })
+              }
+            >
               <View style={[styles.dot, { backgroundColor: hospital?.color ?? colors.textSecondary }]} />
               <View style={styles.hospitalInfo}>
                 <Text style={styles.hospitalName}>{hospital?.name ?? 'Local removido'}</Text>
@@ -181,7 +213,8 @@ export function FinancialScreen() {
                 </Text>
               </View>
               <Text style={styles.hospitalTotal}>{formatCurrency(total)}</Text>
-            </View>
+              {!!hospital && <ChevronRight size={16} color={colors.textSecondary} />}
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
@@ -255,6 +288,21 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
+  overdueCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: 'rgba(239,68,68,0.08)',
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  overdueInfo: { flex: 1 },
+  overdueTitle: { fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.danger },
+  overdueSub: { fontSize: fontSize.xs, color: colors.danger, marginTop: 2 },
+  overdueValue: { fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.danger },
   emptyText: { fontSize: fontSize.sm, color: colors.textSecondary },
   hospitalRow: {
     flexDirection: 'row',

@@ -44,6 +44,18 @@ export async function deleteShift(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// Muda só o status (A receber / Pago) de vários plantões de uma vez — usado
+// pelo "Marcar todos como pagos" e pelo botão de marcar um plantão como pago.
+// Em lotes, pra a lista de ids não estourar o tamanho da URL da requisição.
+export async function updateShiftsStatus(ids: string[], status: 'pending' | 'paid'): Promise<void> {
+  const CHUNK_SIZE = 100;
+  for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+    const chunk = ids.slice(i, i + CHUNK_SIZE);
+    const { error } = await supabase.from('shifts').update({ status }).in('id', chunk);
+    if (error) throw error;
+  }
+}
+
 // update "fino" — só a coluna do evento vinculado na Google Agenda, sem
 // passar pelo ShiftInput inteiro (evita sobrescrever outros campos à toa
 // depois que o evento já foi criado/atualizado do lado do Google)

@@ -5,6 +5,8 @@ import type { MainStackParamList } from './types';
 import { MainTabNavigator } from './MainTabNavigator';
 import { HospitalFormScreen } from '../screens/hospitals/HospitalFormScreen';
 import { ShiftFormScreen } from '../screens/shifts/ShiftFormScreen';
+import { HospitalShiftsScreen } from '../screens/financial/HospitalShiftsScreen';
+import { OverdueScreen } from '../screens/financial/OverdueScreen';
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
 import { ProfileScreen } from '../screens/settings/ProfileScreen';
 import { GoogleCalendarScreen } from '../screens/settings/GoogleCalendarScreen';
@@ -27,6 +29,8 @@ export function MainNavigator() {
         component={ShiftFormScreen}
         options={{ presentation: 'modal' }}
       />
+      <Stack.Screen name="HospitalShifts" component={HospitalShiftsScreen} />
+      <Stack.Screen name="Overdue" component={OverdueScreen} />
       <Stack.Screen name="Reports" component={ReportsScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="GoogleCalendar" component={GoogleCalendarScreen} />

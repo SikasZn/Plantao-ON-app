@@ -10,12 +10,13 @@
 import type { Hospital } from '../types/domain';
 
 /**
- * true quando o hospital tem valor/hora cadastrado — nesse caso o valor do
+ * true quando o hospital tem valor/hora OU valor fixo por plantão
+ * cadastrado — nesse caso o valor do
  * plantão é sempre calculado, nunca digitado à mão (mesma regra em toda
  * tela que lida com plantão).
  */
 export function hasComputedRate(hospital: Hospital | undefined | null): boolean {
-  return !!hospital?.default_hourly_rate;
+  return !!hospital?.default_hourly_rate || !!hospital?.default_shift_value;
 }
 
 /**
@@ -28,6 +29,8 @@ export function computeShiftValue(hospital: Hospital | undefined | null, startAt
   if (!hasComputedRate(hospital)) return null;
   const hours = (endAt.getTime() - startAt.getTime()) / (1000 * 60 * 60);
   if (hours <= 0) return null;
+  // valor fixo do plantão: independe da duração
+  if (hospital!.default_shift_value) return hospital!.default_shift_value;
   // arredonda em centavos (2 casas) pra nunca guardar dízima de ponto
   // flutuante (ex.: 3 * 33.333... horas) como valor monetário
   return Math.round(hours * hospital!.default_hourly_rate! * 100) / 100;

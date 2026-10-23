@@ -19,6 +19,7 @@ const hospitalFormSchema = z.object({
   name: z.string().min(2, 'Informe o nome do local de trabalho'),
   color: z.string().min(1, 'Escolha uma cor'),
   defaultHourlyRate: z.string().optional(),
+  defaultShiftValue: z.string().optional(),
 });
 
 type HospitalFormData = z.infer<typeof hospitalFormSchema>;
@@ -33,6 +34,9 @@ export function HospitalFormScreen({ navigation, route }: Props) {
   const { add, edit, remove } = useHospitals();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  // Como o local paga: por hora ou um valor fixo por plantão. Ao editar, o
+  // modo vem do que já está cadastrado.
+  const [valueMode, setValueMode] = useState<'hourly' | 'fixed'>(existing?.default_shift_value ? 'fixed' : 'hourly');
 
   const {
     control,
@@ -47,6 +51,8 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       color: existing?.color ?? hospitalColorPalette[0],
       defaultHourlyRate:
         existing?.default_hourly_rate != null ? String(Math.round(existing.default_hourly_rate * 100)) : '',
+      defaultShiftValue:
+        existing?.default_shift_value != null ? String(Math.round(existing.default_shift_value * 100)) : '',
     },
   });
 
@@ -58,7 +64,11 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       const payload = {
         name: data.name.trim(),
         color: data.color,
-        default_hourly_rate: data.defaultHourlyRate ? Number(data.defaultHourlyRate) / 100 : null,
+        // só um dos dois é guardado, conforme o modo escolhido
+        default_hourly_rate:
+          valueMode === 'hourly' && data.defaultHourlyRate ? Number(data.defaultHourlyRate) / 100 : null,
+        default_shift_value:
+          valueMode === 'fixed' && data.defaultShiftValue ? Number(data.defaultShiftValue) / 100 : null,
       };
 
       if (isEditing && existing) {
@@ -146,18 +156,44 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       </View>
       {!!errors.color && <Text style={styles.error}>{errors.color.message}</Text>}
 
-      <Controller
-        control={control}
-        name="defaultHourlyRate"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <CurrencyField
-            label="Valor hora padrão (opcional)"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-      />
+      <Text style={styles.label}>Como este local paga? (opcional)</Text>
+      <View style={styles.modeRow}>
+        {([
+          ['hourly', 'Por hora'],
+          ['fixed', 'Valor do plantão'],
+        ] as const).map(([mode, label]) => (
+          <TouchableOpacity
+            key={mode}
+            style={[styles.modeOption, valueMode === mode && styles.modeOptionActive]}
+            onPress={() => setValueMode(mode)}
+          >
+            <Text style={[styles.modeText, valueMode === mode && styles.modeTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {valueMode === 'hourly' ? (
+        <Controller
+          control={control}
+          name="defaultHourlyRate"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <CurrencyField label="Valor hora padrão" onBlur={onBlur} onChangeText={onChange} value={value} />
+          )}
+        />
+      ) : (
+        <Controller
+          control={control}
+          name="defaultShiftValue"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <CurrencyField
+              label="Valor fixo por plantão"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+      )}
 
       <Button label="Salvar" onPress={handleSubmit(onSubmit)} loading={isSubmitting} style={styles.saveButton} />
 
@@ -212,6 +248,17 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderStyle: 'dashed',
   },
+  modeRow: {
+    flexDirection: 'row',
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    padding: 3,
+    marginBottom: spacing.md,
+  },
+  modeOption: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: radius.md - 2 },
+  modeOptionActive: { backgroundColor: colors.primary },
+  modeText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textSecondary },
+  modeTextActive: { color: colors.textInverse },
   error: { fontSize: fontSize.xs, color: colors.danger, marginTop: spacing.xs, marginBottom: spacing.md },
   saveButton: { marginTop: spacing.lg },
   deleteButton: {

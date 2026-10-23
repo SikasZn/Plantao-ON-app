@@ -1,7 +1,14 @@
 // src/hooks/useShifts.ts
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchShifts, createShift, updateShift, deleteShift, type ShiftInput } from '../services/shiftsService';
+import {
+  fetchShifts,
+  createShift,
+  updateShift,
+  deleteShift,
+  updateShiftsStatus,
+  type ShiftInput,
+} from '../services/shiftsService';
 import {
   createRecurringSeries,
   topUpRecurrenceMaterialization,
@@ -70,6 +77,15 @@ export function useShifts() {
     return updated;
   }
 
+  // Marca um ou vários plantões como pagos / a receber (só o status — não mexe
+  // em mais nada do plantão). Atualiza a lista local na hora.
+  async function setStatus(ids: string[], status: 'pending' | 'paid') {
+    if (ids.length === 0) return;
+    await updateShiftsStatus(ids, status);
+    const idSet = new Set(ids);
+    setShifts((prev) => prev.map((s) => (idSet.has(s.id) ? { ...s, status } : s)));
+  }
+
   async function remove(id: string) {
     await deleteShift(id);
     setShifts((prev) => prev.filter((s) => s.id !== id));
@@ -109,6 +125,7 @@ export function useShifts() {
     add,
     addRecurringSeries,
     edit,
+    setStatus,
     remove,
     removeFutureOccurrences,
     editAndFutureOccurrences,

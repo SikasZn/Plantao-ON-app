@@ -40,6 +40,7 @@ export type Database = {
           color: string
           created_at: string
           default_hourly_rate: number | null
+          default_shift_value: number | null
           id: string
           name: string
           user_id: string
@@ -48,6 +49,7 @@ export type Database = {
           color: string
           created_at?: string
           default_hourly_rate?: number | null
+          default_shift_value?: number | null
           id?: string
           name: string
           user_id: string
@@ -56,6 +58,7 @@ export type Database = {
           color?: string
           created_at?: string
           default_hourly_rate?: number | null
+          default_shift_value?: number | null
           id?: string
           name?: string
           user_id?: string

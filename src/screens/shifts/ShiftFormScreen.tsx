@@ -63,7 +63,15 @@ export function ShiftFormScreen({ navigation, route }: Props) {
   const initialDate = route.params?.initialDate;
 
   const { hospitals } = useHospitals();
-  const { add, addRecurringSeries, edit, remove, removeFutureOccurrences, editAndFutureOccurrences } = useShifts();
+  const {
+    add,
+    addRecurringSeries,
+    edit,
+    setStatus: setShiftsStatus,
+    remove,
+    removeFutureOccurrences,
+    editAndFutureOccurrences,
+  } = useShifts();
   const { user } = useAuth();
 
   const [entryType, setEntryType] = useState<'shift' | 'commitment'>(
@@ -133,6 +141,22 @@ export function ShiftFormScreen({ navigation, route }: Props) {
   // plantão existente nunca recalculava nada — esse era o bug relatado.
   // A conta em si mora em utils/shiftValue.ts — centralizada pra ser a
   // mesma usada aqui e na materialização de séries recorrentes.
+  // "Já recebi": ao editar um plantão que já existe, o toggle grava na hora
+  // (sem precisar apertar Salvar); ao criar, só muda o estado e vai junto no
+  // Salvar. Se a gravação falhar, volta pro valor anterior.
+  async function handlePaidToggle(value: boolean) {
+    const previous = status;
+    const next: ShiftStatus = value ? 'paid' : 'pending';
+    setStatus(next);
+    if (!existing) return;
+    try {
+      await setShiftsStatus([existing.id], next);
+    } catch (error) {
+      setStatus(previous);
+      Alert.alert('Não foi possível atualizar o pagamento', (error as Error).message);
+    }
+  }
+
   const isValueComputed = entryType === 'shift' && hasComputedRate(selectedHospital);
 
   useEffect(() => {
@@ -614,20 +638,30 @@ export function ShiftFormScreen({ navigation, route }: Props) {
               editable={!isValueComputed}
             />
             {isValueComputed && (
-              <Text style={styles.hint}>Calculado automaticamente pelo valor/hora do local de trabalho</Text>
+              <Text style={styles.hint}>
+                {selectedHospital?.default_shift_value
+                  ? 'Valor fixo do plantão definido no local de trabalho'
+                  : 'Calculado automaticamente pelo valor/hora do local de trabalho'}
+              </Text>
             )}
 
-            <Text style={styles.label}>Status</Text>
             {isPassed ? (
-              <View style={styles.statusRow}>
-                <View style={[styles.chip, styles.chipActive]}>
-                  <Text style={[styles.chipText, styles.chipTextActive]}>Passado</Text>
+              <>
+                <Text style={styles.label}>Status</Text>
+                <View style={styles.statusRow}>
+                  <View style={[styles.chip, styles.chipActive]}>
+                    <Text style={[styles.chipText, styles.chipTextActive]}>Passado</Text>
+                  </View>
                 </View>
-              </View>
+              </>
             ) : (
-              <View style={styles.statusRow}>
-                <StatusChip label="A receber" active={status === 'pending'} onPress={() => setStatus('pending')} />
-                <StatusChip label="Pago" active={status === 'paid'} onPress={() => setStatus('paid')} />
+              <View style={styles.switchRow}>
+                <Text style={styles.switchLabel}>Já recebi</Text>
+                <Switch
+                  value={status === 'paid'}
+                  onValueChange={handlePaidToggle}
+                  trackColor={{ true: colors.primary, false: colors.border }}
+                />
               </View>
             )}
           </>
