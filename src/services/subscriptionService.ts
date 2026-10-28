@@ -54,14 +54,20 @@ export async function signOutOfSubscriptions(): Promise<void> {
 export type AccessOverride = 'yes' | 'no' | 'unknown';
 
 export async function getAccessOverride(userId: string): Promise<AccessOverride> {
-  const { data, error } = await supabase
+  // Função no banco: olha access_overrides (por usuário) e access_emails (por
+  // e-mail, vale antes mesmo de a conta existir), respeitando expires_at.
+  const { data, error } = await supabase.rpc('has_free_access');
+  if (!error && typeof data === 'boolean') return data ? 'yes' : 'no';
+
+  // Fallback (função ainda não criada no banco): só a tabela por usuário.
+  const { data: row, error: rowError } = await supabase
     .from('access_overrides')
     .select('expires_at')
     .eq('user_id', userId)
     .maybeSingle();
-  if (error) return 'unknown';
-  if (!data) return 'no';
-  if (data.expires_at && new Date(data.expires_at).getTime() <= Date.now()) return 'no';
+  if (rowError) return 'unknown';
+  if (!row) return 'no';
+  if (row.expires_at && new Date(row.expires_at).getTime() <= Date.now()) return 'no';
   return 'yes';
 }
 
