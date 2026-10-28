@@ -96,8 +96,8 @@ export function CompleteProfileScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior="padding">
-      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'padding'}>
+      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrapper}>
           <Logo size={72} />
         </View>

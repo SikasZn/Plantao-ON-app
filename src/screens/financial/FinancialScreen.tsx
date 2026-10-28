@@ -3,10 +3,12 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { AlertCircle, ChevronLeft, ChevronRight, Wallet } from 'lucide-react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/types';
 import { isOverdue } from '../../utils/payments';
+import { useExpenses } from '../../contexts/ExpensesContext';
+import { monthKeyOf, totalForMonth, totalForYear } from '../../utils/expenses';
 import { useShifts } from '../../hooks/useShifts';
 import { useHospitals } from '../../contexts/HospitalsContext';
 import { formatCurrency } from '../../utils/currency';
@@ -19,6 +21,7 @@ type Period = 'month' | 'year';
 export function FinancialScreen() {
   const { shifts, refetch } = useShifts();
   const { hospitals } = useHospitals();
+  const { expenses } = useExpenses();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
   const [period, setPeriod] = useState<Period>('month');
@@ -93,9 +96,22 @@ export function FinancialScreen() {
     [realFilteredShifts]
   );
 
+  // Gastos do período: no mês, os gastos que valem naquele mês (os mensais
+  // entram sozinhos); no ano, a soma dos 12 meses.
+  const expensesTotal =
+    period === 'month'
+      ? totalForMonth(expenses, monthKeyOf(referenceDate))
+      : totalForYear(expenses, referenceDate.getFullYear());
+  // Saldo = tudo que o período rende (recebido + a receber) menos os gastos
+  const balance = totalValue - expensesTotal;
+  const chartMax = Math.max(totalValue, expensesTotal, 1);
+
   // Atrasados: de todos os tempos (não só do período filtrado) — um
   // pagamento esquecido de meses atrás continua devendo.
-  const overdueShifts = useMemo(() => shifts.filter((s) => isOverdue(s)), [shifts]);
+  const overdueShifts = useMemo(
+    () => shifts.filter((s) => isOverdue(s, s.hospital_id ? hospitalsById.get(s.hospital_id) : null)),
+    [shifts, hospitalsById]
+  );
   const overdueTotal = overdueShifts.reduce((sum, s) => sum + (s.total_value ?? 0), 0);
 
   const byHospital = useMemo(() => {
@@ -158,7 +174,42 @@ export function FinancialScreen() {
               <Text style={styles.summarySplitValue}>{formatCurrency(pendingValue)}</Text>
               <Text style={styles.summarySplitLabel}>A receber</Text>
             </View>
+            <View style={styles.summarySplitDivider} />
+            <View style={styles.summarySplitItem}>
+              <Text style={styles.summarySplitValue}>{formatCurrency(expensesTotal)}</Text>
+              <Text style={styles.summarySplitLabel}>Gastos</Text>
+            </View>
           </View>
+        </View>
+
+        <View style={styles.balanceCard}>
+          <View style={styles.balanceHeader}>
+            <Text style={styles.balanceTitle}>Saldo do período</Text>
+            <Text style={[styles.balanceValue, balance < 0 && styles.balanceNegative]}>{formatCurrency(balance)}</Text>
+          </View>
+          <View style={styles.barRow}>
+            <Text style={styles.barLabel}>Ganhos</Text>
+            <View style={styles.barTrack}>
+              <View style={[styles.barFill, { width: `${(totalValue / chartMax) * 100}%`, backgroundColor: colors.primary }]} />
+            </View>
+            <Text style={styles.barValue}>{formatCurrency(totalValue)}</Text>
+          </View>
+          <View style={styles.barRow}>
+            <Text style={styles.barLabel}>Gastos</Text>
+            <View style={styles.barTrack}>
+              <View style={[styles.barFill, { width: `${(expensesTotal / chartMax) * 100}%`, backgroundColor: colors.danger }]} />
+            </View>
+            <Text style={styles.barValue}>{formatCurrency(expensesTotal)}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.manageExpenses}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Expenses', { monthKey: monthKeyOf(referenceDate) })}
+          >
+            <Wallet size={18} color={colors.primary} />
+            <Text style={styles.manageExpensesText}>Gerenciar gastos mensais</Text>
+            <ChevronRight size={16} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.periodStatsRow}>
@@ -288,6 +339,33 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
+  balanceCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  balanceHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  balanceTitle: { fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.textPrimary },
+  balanceValue: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.primary },
+  balanceNegative: { color: colors.danger },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  barLabel: { width: 52, fontSize: fontSize.xs, color: colors.textSecondary },
+  barTrack: { flex: 1, height: 12, borderRadius: 6, backgroundColor: colors.background, overflow: 'hidden' },
+  barFill: { height: 12, borderRadius: 6 },
+  barValue: { width: 92, textAlign: 'right', fontSize: fontSize.xs, fontWeight: fontWeight.semibold, color: colors.textPrimary },
+  manageExpenses: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  manageExpensesText: { flex: 1, fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.primary },
   overdueCard: {
     flexDirection: 'row',
     alignItems: 'center',

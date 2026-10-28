@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Check, ChevronDown, FileSpreadsheet, FileText, Mail } from 'lucide-react-native';
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, Mail } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/types';
 import { useShifts } from '../../hooks/useShifts';
@@ -38,7 +38,17 @@ export function ReportsScreen({ navigation }: Props) {
 
   const selectedHospital = hospitalFilter ? hospitalsById.get(hospitalFilter) : undefined;
 
-  const now = useMemo(() => new Date(), []);
+  // mês/ano do relatório — começa no atual e dá pra voltar para períodos
+  // passados (ex.: janeiro de 2026) com as setas
+  const [now, setNow] = useState(() => new Date());
+
+  function shiftPeriod(delta: number) {
+    setNow((prev) =>
+      period === 'month'
+        ? new Date(prev.getFullYear(), prev.getMonth() + delta, 1)
+        : new Date(prev.getFullYear() + delta, prev.getMonth(), 1)
+    );
+  }
 
   const filteredShifts = useMemo(() => {
     let list = shifts.filter((shift) => {
@@ -149,8 +159,18 @@ export function ReportsScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Período</Text>
         <View style={styles.periodTabs}>
-          <PeriodTab label="Mês atual" active={period === 'month'} onPress={() => setPeriod('month')} />
-          <PeriodTab label="Ano atual" active={period === 'year'} onPress={() => setPeriod('year')} />
+          <PeriodTab label="Mês" active={period === 'month'} onPress={() => setPeriod('month')} />
+          <PeriodTab label="Ano" active={period === 'year'} onPress={() => setPeriod('year')} />
+        </View>
+
+        <View style={styles.periodNav}>
+          <TouchableOpacity onPress={() => shiftPeriod(-1)} hitSlop={12}>
+            <ChevronLeft size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.periodNavLabel}>{periodLabel}</Text>
+          <TouchableOpacity onPress={() => shiftPeriod(1)} hitSlop={12}>
+            <ChevronRight size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
         </View>
 
         <Text style={styles.label}>Local de trabalho</Text>
@@ -295,6 +315,13 @@ const styles = StyleSheet.create({
   title: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.textPrimary },
   content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
   label: { fontSize: fontSize.sm, color: colors.textSecondary, marginBottom: spacing.sm },
+  periodNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+  },
+  periodNavLabel: { fontSize: fontSize.base, fontWeight: fontWeight.semibold, color: colors.textPrimary },
   periodTabs: {
     flexDirection: 'row',
     backgroundColor: colors.background,

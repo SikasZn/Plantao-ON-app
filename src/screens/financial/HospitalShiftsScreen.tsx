@@ -85,7 +85,10 @@ export function HospitalShiftsScreen({ navigation, route }: Props) {
           <Text style={styles.title} numberOfLines={1}>
             {hospital?.name ?? 'Local removido'}
           </Text>
-          <Text style={styles.periodText}>{periodLabel}</Text>
+          <Text style={styles.periodText}>
+            {periodLabel}
+            {hospital?.payment_day ? ` · paga todo dia ${hospital.payment_day}` : ''}
+          </Text>
         </View>
         <View style={{ width: 24 }} />
       </View>

@@ -15,11 +15,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, Lock } from 'lucide-react-native';
-import {
-  AppleAuthenticationButton,
-  AppleAuthenticationButtonStyle,
-  AppleAuthenticationButtonType,
-} from 'expo-apple-authentication';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,7 +23,8 @@ import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { Logo } from '../../components/ui/Logo';
 import { GoogleSignInButton } from '../../components/ui/GoogleSignInButton';
-import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
+import { AppleSignInButton } from '../../components/ui/AppleSignInButton';
+import { colors, spacing, fontSize, fontWeight } from '../../theme';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Informe seu e-mail').email('E-mail inválido'),
@@ -95,8 +91,8 @@ export function LoginScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior="padding">
-      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'padding'}>
+      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrapper}>
           <Logo size={88} />
         </View>
@@ -157,19 +153,7 @@ export function LoginScreen({ navigation }: Props) {
             style={styles.googleButton}
           />
 
-          {isAppleAvailable && (
-            // AppleAuthenticationButton não tem prop "disabled" nativa — o
-            // pointerEvents é o jeito de bloquear toque duplo enquanto carrega
-            <View pointerEvents={isAppleLoading ? 'none' : 'auto'} style={isAppleLoading && styles.appleButtonLoading}>
-              <AppleAuthenticationButton
-                buttonType={AppleAuthenticationButtonType.CONTINUE}
-                buttonStyle={AppleAuthenticationButtonStyle.BLACK}
-                cornerRadius={radius.md}
-                style={styles.appleButton}
-                onPress={handleAppleSignIn}
-              />
-            </View>
-          )}
+          {isAppleAvailable && <AppleSignInButton onPress={handleAppleSignIn} loading={isAppleLoading} />}
 
           <View style={styles.signUpRow}>
             <Text style={styles.footerText}>Ainda não tem conta? </Text>
@@ -206,8 +190,6 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
   dividerText: { color: colors.textSecondary, fontSize: fontSize.xs },
   googleButton: { width: '100%', marginBottom: spacing.sm },
-  appleButton: { width: '100%', height: 52 },
-  appleButtonLoading: { opacity: 0.6 },
   footerText: { fontSize: fontSize.sm, color: colors.textSecondary },
   signUpRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.lg },
 });

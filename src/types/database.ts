@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          end_month: string | null
+          id: string
+          name: string
+          recurrence: string
+          start_month: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          end_month?: string | null
+          id?: string
+          name: string
+          recurrence: string
+          start_month: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          end_month?: string | null
+          id?: string
+          name?: string
+          recurrence?: string
+          start_month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hospitals: {
         Row: {
           color: string
@@ -43,6 +76,7 @@ export type Database = {
           default_shift_value: number | null
           id: string
           name: string
+          payment_day: number | null
           user_id: string
         }
         Insert: {
@@ -52,6 +86,7 @@ export type Database = {
           default_shift_value?: number | null
           id?: string
           name: string
+          payment_day?: number | null
           user_id: string
         }
         Update: {
@@ -61,6 +96,7 @@ export type Database = {
           default_shift_value?: number | null
           id?: string
           name?: string
+          payment_day?: number | null
           user_id?: string
         }
         Relationships: []

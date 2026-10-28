@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { HospitalsProvider } from '../contexts/HospitalsContext';
+import { ShiftsProvider } from '../contexts/ShiftsContext';
+import { ExpensesProvider } from '../contexts/ExpensesContext';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 import { SplashScreen } from '../screens/splash/SplashScreen';
@@ -49,7 +51,11 @@ export function RootNavigator() {
           // chave do RevenueCat o gate libera tudo
           <SubscriptionGate>
             <HospitalsProvider>
-              <MainNavigator />
+              <ShiftsProvider>
+                <ExpensesProvider>
+                  <MainNavigator />
+                </ExpensesProvider>
+              </ShiftsProvider>
             </HospitalsProvider>
           </SubscriptionGate>
         )

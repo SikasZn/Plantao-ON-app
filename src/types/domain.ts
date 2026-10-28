@@ -10,6 +10,10 @@ export type Hospital = Tables<'hospitals'>;
 export type Shift = Tables<'shifts'>;
 export type Profile = Tables<'profiles'>;
 export type RecurrenceRule = Tables<'recurrence_rules'>;
+export type Expense = Tables<'expenses'>;
+
+// 'recurrence' é texto + CHECK no banco (ver migration_payment_day_and_expenses.sql)
+export type ExpenseRecurrence = 'monthly' | 'once';
 
 // 'status' e 'plan' são texto livre com CHECK constraint no banco, não um
 // enum nativo do Postgres — por isso o gerador não capta os valores

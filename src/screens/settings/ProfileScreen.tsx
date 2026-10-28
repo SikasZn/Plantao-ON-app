@@ -152,8 +152,8 @@ export function ProfileScreen({ navigation }: Props) {
       {isLoadingProfile ? (
         <ActivityIndicator style={styles.loading} color={colors.primary} />
       ) : (
-        <KeyboardAvoidingView style={styles.flex} behavior="padding">
-          <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'padding'}>
+          <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
             <View style={styles.avatarWrapper}>
               {user && (
                 <AvatarPicker

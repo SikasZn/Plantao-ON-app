@@ -1,7 +1,7 @@
 // src/screens/hospitals/HospitalFormScreen.tsx
 import React, { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,10 @@ const hospitalFormSchema = z.object({
   color: z.string().min(1, 'Escolha uma cor'),
   defaultHourlyRate: z.string().optional(),
   defaultShiftValue: z.string().optional(),
+  paymentDay: z
+    .string()
+    .optional()
+    .refine((v) => !v || (Number(v) >= 1 && Number(v) <= 31), 'Informe um dia entre 1 e 31'),
 });
 
 type HospitalFormData = z.infer<typeof hospitalFormSchema>;
@@ -51,6 +55,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       color: existing?.color ?? hospitalColorPalette[0],
       defaultHourlyRate:
         existing?.default_hourly_rate != null ? String(Math.round(existing.default_hourly_rate * 100)) : '',
+      paymentDay: existing?.payment_day != null ? String(existing.payment_day) : '',
       defaultShiftValue:
         existing?.default_shift_value != null ? String(Math.round(existing.default_shift_value * 100)) : '',
     },
@@ -64,6 +69,7 @@ export function HospitalFormScreen({ navigation, route }: Props) {
       const payload = {
         name: data.name.trim(),
         color: data.color,
+        payment_day: data.paymentDay ? Number(data.paymentDay) : null,
         // só um dos dois é guardado, conforme o modo escolhido
         default_hourly_rate:
           valueMode === 'hourly' && data.defaultHourlyRate ? Number(data.defaultHourlyRate) / 100 : null,
@@ -104,8 +110,8 @@ export function HospitalFormScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior="padding">
-    <ScrollView style={styles.flex} contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'padding'}>
+    <ScrollView automaticallyAdjustKeyboardInsets style={styles.flex} contentContainerStyle={[styles.container, { paddingBottom: spacing.lg + insets.bottom }]} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ArrowLeft size={24} color={colors.textPrimary} />
@@ -155,6 +161,24 @@ export function HospitalFormScreen({ navigation, route }: Props) {
         </TouchableOpacity>
       </View>
       {!!errors.color && <Text style={styles.error}>{errors.color.message}</Text>}
+
+      <Controller
+        control={control}
+        name="paymentDay"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextField
+            label="Dia do pagamento (opcional)"
+            placeholder="Ex.: 10"
+            keyboardType="number-pad"
+            maxLength={2}
+            onBlur={onBlur}
+            onChangeText={(text) => onChange(text.replace(/\D/g, ''))}
+            value={value}
+            error={errors.paymentDay?.message}
+          />
+        )}
+      />
+      <Text style={styles.hint}>Dia do mês em que este local costuma pagar. Plantões não pagos depois dessa data aparecem como atrasados.</Text>
 
       <Text style={styles.label}>Como este local paga? (opcional)</Text>
       <View style={styles.modeRow}>
@@ -259,6 +283,7 @@ const styles = StyleSheet.create({
   modeOptionActive: { backgroundColor: colors.primary },
   modeText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textSecondary },
   modeTextActive: { color: colors.textInverse },
+  hint: { fontSize: fontSize.xs, color: colors.textSecondary, marginTop: -spacing.sm, marginBottom: spacing.md },
   error: { fontSize: fontSize.xs, color: colors.danger, marginTop: spacing.xs, marginBottom: spacing.md },
   saveButton: { marginTop: spacing.lg },
   deleteButton: {

@@ -14,7 +14,7 @@ import { useHospitals } from '../../contexts/HospitalsContext';
 import { PaymentShiftRow } from '../../components/PaymentShiftRow';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate, formatDateTimeRange } from '../../utils/date';
-import { daysOverdue, formatDaysOverdue, isOverdue } from '../../utils/payments';
+import { dueDateOf, daysOverdue, formatDaysOverdue, isOverdue } from '../../utils/payments';
 import { colors, spacing, radius, fontSize, fontWeight } from '../../theme';
 import type { Shift } from '../../types/domain';
 
@@ -27,12 +27,18 @@ export function OverdueScreen({ navigation }: Props) {
   // sair da tela, pra dar pra desfazer um toque sem querer
   const [justPaid, setJustPaid] = useState<Set<string>>(new Set());
 
+  const hospitalsById = useMemo(() => new Map(hospitals.map((h) => [h.id, h])), [hospitals]);
+
   const overdue = useMemo(
     () =>
       shifts
-        .filter((s) => isOverdue(s) || justPaid.has(s.id))
-        .sort((a, b) => new Date(a.end_at).getTime() - new Date(b.end_at).getTime()),
-    [shifts, justPaid]
+        .filter((s) => justPaid.has(s.id) || isOverdue(s, s.hospital_id ? hospitalsById.get(s.hospital_id) : null))
+        .sort(
+          (a, b) =>
+            dueDateOf(a, a.hospital_id ? hospitalsById.get(a.hospital_id) : null).valueOf() -
+            dueDateOf(b, b.hospital_id ? hospitalsById.get(b.hospital_id) : null).valueOf()
+        ),
+    [shifts, justPaid, hospitalsById]
   );
 
   const groups = useMemo(() => {
@@ -111,7 +117,7 @@ export function OverdueScreen({ navigation }: Props) {
                   subtitle={
                     shift.status === 'paid'
                       ? 'Marcado como pago'
-                      : `Venceu em ${formatDate(shift.end_at, 'DD/MM')} · ${formatDaysOverdue(daysOverdue(shift))}`
+                      : `Venceu em ${dueDateOf(shift, hospital).format('DD/MM')} · ${formatDaysOverdue(daysOverdue(shift, hospital))}`
                   }
                   subtitleColor={shift.status === 'paid' ? colors.primary : colors.danger}
                   value={shift.total_value ?? 0}

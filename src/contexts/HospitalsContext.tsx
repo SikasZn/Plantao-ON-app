@@ -16,6 +16,7 @@ import {
   type HospitalInput,
 } from '../services/hospitalsService';
 import type { Hospital } from '../types/domain';
+import { withTimeout } from '../utils/withTimeout';
 
 interface HospitalsContextValue {
   hospitals: Hospital[];
@@ -54,12 +55,12 @@ export function HospitalsProvider({ children }: { children: React.ReactNode }) {
 
   async function add(input: HospitalInput) {
     if (!user) throw new Error('Usuário não autenticado.');
-    const created = await createHospital(user.id, input);
+    const created = await withTimeout(createHospital(user.id, input));
     setHospitals((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
   }
 
   async function edit(id: string, input: HospitalInput) {
-    const updated = await updateHospital(id, input);
+    const updated = await withTimeout(updateHospital(id, input));
     setHospitals((prev) => prev.map((h) => (h.id === id ? updated : h)));
   }
 

@@ -1,5 +1,5 @@
 // src/navigation/types.ts
-import type { Hospital, Shift } from '../types/domain';
+import type { Expense, Hospital, Shift } from '../types/domain';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -23,9 +23,13 @@ export type MainStackParamList = {
   // (referenceDate = ISO da data de referência do filtro)
   HospitalShifts: { hospitalId: string; period: 'month' | 'year'; referenceDate: string };
   Overdue: undefined;
+  // monthKey = 'YYYY-MM' do mês que está sendo visto
+  Expenses: { monthKey: string };
+  ExpenseForm: { monthKey: string; expense?: Expense };
   Reports: undefined;
   Profile: undefined;
   GoogleCalendar: undefined;
   Backup: undefined;
+  Import: undefined;
   Subscription: undefined;
 };

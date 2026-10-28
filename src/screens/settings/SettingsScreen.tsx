@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, type CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { BarChart3, Bell, Calendar, ChevronRight, CreditCard, Database, LogOut, UserCircle } from 'lucide-react-native';
+import { BarChart3, Bell, Calendar, ChevronRight, CreditCard, Database, LogOut, Upload, UserCircle } from 'lucide-react-native';
 import type { MainTabParamList, MainStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../contexts/SubscriptionContext';
@@ -90,6 +90,11 @@ export function SettingsScreen({ navigation }: Props) {
         icon={<Calendar size={20} color={colors.textPrimary} />}
         label="Google Agenda"
         onPress={() => navigation.navigate('GoogleCalendar')}
+      />
+      <MenuRow
+        icon={<Upload size={20} color={colors.textPrimary} />}
+        label="Importar plantões"
+        onPress={() => navigation.navigate('Import')}
       />
       <MenuRow
         icon={<Database size={20} color={colors.textPrimary} />}

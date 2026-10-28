@@ -56,6 +56,12 @@ function combineDateAndTime(base: Date, datePart?: Date, timePart?: Date) {
   return result;
 }
 
+// Tarefas "nice to have" depois de salvar (lembrete local, Google Agenda):
+// rodam por trás, sem bloquear a tela, e nunca derrubam nada se falharem.
+function runInBackground(task: () => Promise<unknown>) {
+  void task().catch(() => {});
+}
+
 export function ShiftFormScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const existing = route.params?.shift;
@@ -301,9 +307,14 @@ export function ShiftFormScreen({ navigation, route }: Props) {
     setIsSubmitting(true);
     try {
       const updated = await edit(target.id, input);
-      await scheduleReminderSafely(updated, entryLabel);
-      await syncToGoogleCalendarSafely(updated, entryLabel);
+      // o plantão já está salvo: volta pra lista na hora e deixa lembrete e
+      // Google Agenda (que dependem de permissão do sistema / internet)
+      // rodando por trás, sem segurar o botão em "carregando"
       navigation.goBack();
+      runInBackground(async () => {
+        await scheduleReminderSafely(updated, entryLabel);
+        await syncToGoogleCalendarSafely(updated, entryLabel);
+      });
     } catch (error) {
       Alert.alert('Não foi possível salvar', (error as Error).message);
     } finally {
@@ -332,12 +343,14 @@ export function ShiftFormScreen({ navigation, route }: Props) {
       // as ocorrências futuras antigas somem (a série nova as substitui) —
       // cancela o lembrete e o evento da Google Agenda de cada uma antes
       // delas serem esquecidas
-      await Promise.all(removedOld.map((shift) => cleanupShiftSideEffects(shift)));
-      await scheduleReminderSafely(updated, entryLabel);
-      await syncToGoogleCalendarSafely(updated, entryLabel);
-      await Promise.all(created.map((shift) => scheduleReminderSafely(shift, entryLabel)));
-      await Promise.all(created.map((shift) => syncToGoogleCalendarSafely(shift, entryLabel)));
       navigation.goBack();
+      runInBackground(async () => {
+        await Promise.all(removedOld.map((shift) => cleanupShiftSideEffects(shift)));
+        await scheduleReminderSafely(updated, entryLabel);
+        await syncToGoogleCalendarSafely(updated, entryLabel);
+        await Promise.all(created.map((shift) => scheduleReminderSafely(shift, entryLabel)));
+        await Promise.all(created.map((shift) => syncToGoogleCalendarSafely(shift, entryLabel)));
+      });
     } catch (error) {
       Alert.alert('Não foi possível salvar', (error as Error).message);
     } finally {
@@ -369,14 +382,19 @@ export function ShiftFormScreen({ navigation, route }: Props) {
           notes: baseInput.notes,
         };
         const created = await addRecurringSeries(ruleInput);
-        await Promise.all(created.map((shift) => scheduleReminderSafely(shift, entryLabel)));
-        await Promise.all(created.map((shift) => syncToGoogleCalendarSafely(shift, entryLabel)));
+        navigation.goBack();
+        runInBackground(async () => {
+          await Promise.all(created.map((shift) => scheduleReminderSafely(shift, entryLabel)));
+          await Promise.all(created.map((shift) => syncToGoogleCalendarSafely(shift, entryLabel)));
+        });
       } else {
         const created = await add(baseInput);
-        await scheduleReminderSafely(created, entryLabel);
-        await syncToGoogleCalendarSafely(created, entryLabel);
+        navigation.goBack();
+        runInBackground(async () => {
+          await scheduleReminderSafely(created, entryLabel);
+          await syncToGoogleCalendarSafely(created, entryLabel);
+        });
       }
-      navigation.goBack();
     } catch (error) {
       Alert.alert('Não foi possível salvar', (error as Error).message);
     } finally {
@@ -507,8 +525,8 @@ export function ShiftFormScreen({ navigation, route }: Props) {
       : 'time';
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior="padding">
-      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'padding'}>
+      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <ArrowLeft size={24} color={colors.textPrimary} />

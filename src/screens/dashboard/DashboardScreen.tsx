@@ -69,26 +69,16 @@ export function DashboardScreen({ navigation }: Props) {
     .filter((s) => s.status === 'pending')
     .reduce((sum, s) => sum + (s.total_value ?? 0), 0);
 
-  // Totais gerais (todo o histórico, não só o mês) — só conta plantões de
-  // verdade, não Compromisso (total_value null), já que "horas trabalhadas"
-  // não inclui um compromisso como uma reunião
-  const realShifts = useMemo(() => shifts.filter((s) => s.total_value !== null), [shifts]);
-  const totalShiftsCount = realShifts.length;
-  const totalHoursWorked = useMemo(
-    () => realShifts.reduce((sum, s) => sum + durationInHours(s.start_at, s.end_at), 0),
-    [realShifts]
+  // Horas do mês atual: só plantão de verdade (tem local de trabalho; um
+  // Compromisso não é hora trabalhada) e que não foi repassado. Como parte
+  // de monthShifts, zera sozinho a cada virada de mês.
+  const monthHours = useMemo(
+    () =>
+      monthShifts
+        .filter((s) => !!s.hospital_id && s.status !== 'passed')
+        .reduce((sum, s) => sum + durationInHours(s.start_at, s.end_at), 0),
+    [monthShifts]
   );
-
-  // pendente de meses futuros (não conta o mês atual, que já está em pendingThisMonth)
-  const pendingFutureMonths = useMemo(() => {
-    const now = new Date();
-    const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-    return shifts
-      .filter(
-        (shift) => shift.status === 'pending' && new Date(shift.start_at).getTime() > endOfCurrentMonth.getTime()
-      )
-      .reduce((sum, s) => sum + (s.total_value ?? 0), 0);
-  }, [shifts]);
 
   const upcomingShifts = useMemo(() => {
     const todayStart = new Date();
@@ -122,11 +112,7 @@ export function DashboardScreen({ navigation }: Props) {
           </View>
           <View style={styles.statsRow}>
             <StatCard label="A receber (mês atual)" value={formatCurrency(pendingThisMonth)} />
-            <StatCard label="A receber (próx. meses)" value={formatCurrency(pendingFutureMonths)} />
-          </View>
-          <View style={styles.statsRow}>
-            <StatCard label="Total de plantões" value={String(totalShiftsCount)} />
-            <StatCard label="Total de horas trabalhadas" value={`${totalHoursWorked.toFixed(0)}h`} />
+            <StatCard label="Horas trabalhadas no mês" value={`${monthHours.toFixed(0)}h`} />
           </View>
         </View>
 
