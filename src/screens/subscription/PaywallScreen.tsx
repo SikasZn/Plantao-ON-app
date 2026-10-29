@@ -4,7 +4,7 @@
 // assinatura ativa nem teste grátis. Os preços e o teste grátis vêm da própria
 // loja (via RevenueCat), então o texto sempre bate com o que será cobrado.
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check } from 'lucide-react-native';
 import type { PurchasesPackage } from 'react-native-purchases';
@@ -105,7 +105,7 @@ export function PaywallScreen() {
     try {
       const found = await restore();
       if (!found) {
-        Alert.alert('Nenhuma assinatura encontrada', 'Não encontramos uma assinatura ativa nesta conta do Google Play.');
+        Alert.alert('Nenhuma assinatura encontrada', `Não encontramos uma assinatura ativa nesta conta ${Platform.OS === 'ios' ? 'da Apple' : 'do Google Play'}.`);
       }
     } catch {
       Alert.alert('Não foi possível restaurar', 'Verifique sua conexão e tente novamente.');
@@ -196,8 +196,9 @@ export function PaywallScreen() {
             {trialDays
               ? `Depois do teste grátis, ${selected.product.priceString} ${periodLabel(selected)}. `
               : `${selected.product.priceString} ${periodLabel(selected)}. `}
-            A assinatura é renovada automaticamente e cobrada na sua conta do Google Play, até você cancelar. Você pode
-            cancelar a qualquer momento em Play Store &gt; Pagamentos e assinaturas &gt; Assinaturas.
+            {Platform.OS === 'ios'
+              ? 'A assinatura é renovada automaticamente e cobrada na sua conta do Apple ID, até você cancelar. Você pode cancelar a qualquer momento em Ajustes > seu nome > Assinaturas.'
+              : 'A assinatura é renovada automaticamente e cobrada na sua conta do Google Play, até você cancelar. Você pode cancelar a qualquer momento em Play Store > Pagamentos e assinaturas > Assinaturas.'}
           </Text>
         )}
 
