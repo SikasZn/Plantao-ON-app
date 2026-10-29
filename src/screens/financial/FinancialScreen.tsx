@@ -162,44 +162,49 @@ export function FinancialScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryValue}>{formatCurrency(totalValue)}</Text>
+          <Text style={styles.summaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(totalValue)}</Text>
           <Text style={styles.summaryLabel}>Ganhos no período</Text>
           <View style={styles.summarySplit}>
             <View style={styles.summarySplitItem}>
-              <Text style={styles.summarySplitValue}>{formatCurrency(receivedValue)}</Text>
+              <Text style={styles.summarySplitValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+                {formatCurrency(receivedValue)}
+              </Text>
               <Text style={styles.summarySplitLabel}>Recebido</Text>
             </View>
             <View style={styles.summarySplitDivider} />
             <View style={styles.summarySplitItem}>
-              <Text style={styles.summarySplitValue}>{formatCurrency(pendingValue)}</Text>
+              <Text style={styles.summarySplitValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+                {formatCurrency(pendingValue)}
+              </Text>
               <Text style={styles.summarySplitLabel}>A receber</Text>
             </View>
-            <View style={styles.summarySplitDivider} />
-            <View style={styles.summarySplitItem}>
-              <Text style={styles.summarySplitValue}>{formatCurrency(expensesTotal)}</Text>
-              <Text style={styles.summarySplitLabel}>Gastos</Text>
-            </View>
+          </View>
+          <View style={styles.summaryExpensesRow}>
+            <Text style={styles.summarySplitLabel}>Gastos</Text>
+            <Text style={styles.summaryExpensesValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+              {formatCurrency(expensesTotal)}
+            </Text>
           </View>
         </View>
 
         <View style={styles.balanceCard}>
           <View style={styles.balanceHeader}>
             <Text style={styles.balanceTitle}>Saldo do período</Text>
-            <Text style={[styles.balanceValue, balance < 0 && styles.balanceNegative]}>{formatCurrency(balance)}</Text>
+            <Text style={[styles.balanceValue, balance < 0 && styles.balanceNegative]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(balance)}</Text>
           </View>
           <View style={styles.barRow}>
             <Text style={styles.barLabel}>Ganhos</Text>
             <View style={styles.barTrack}>
               <View style={[styles.barFill, { width: `${(totalValue / chartMax) * 100}%`, backgroundColor: colors.primary }]} />
             </View>
-            <Text style={styles.barValue}>{formatCurrency(totalValue)}</Text>
+            <Text style={styles.barValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(totalValue)}</Text>
           </View>
           <View style={styles.barRow}>
             <Text style={styles.barLabel}>Gastos</Text>
             <View style={styles.barTrack}>
               <View style={[styles.barFill, { width: `${(expensesTotal / chartMax) * 100}%`, backgroundColor: colors.danger }]} />
             </View>
-            <Text style={styles.barValue}>{formatCurrency(expensesTotal)}</Text>
+            <Text style={styles.barValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(expensesTotal)}</Text>
           </View>
           <TouchableOpacity
             style={styles.manageExpenses}
@@ -232,7 +237,7 @@ export function FinancialScreen() {
                 {overdueShifts.length} {overdueShifts.length === 1 ? 'plantão' : 'plantões'} sem marcar como pago
               </Text>
             </View>
-            <Text style={styles.overdueValue}>{formatCurrency(overdueTotal)}</Text>
+            <Text style={styles.overdueValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(overdueTotal)}</Text>
             <ChevronRight size={18} color={colors.danger} />
           </TouchableOpacity>
         )}
@@ -263,7 +268,7 @@ export function FinancialScreen() {
                   {count} {count === 1 ? 'plantão' : 'plantões'} · {hours.toFixed(0)}h
                 </Text>
               </View>
-              <Text style={styles.hospitalTotal}>{formatCurrency(total)}</Text>
+              <Text style={styles.hospitalTotal} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(total)}</Text>
               {!!hospital && <ChevronRight size={16} color={colors.textSecondary} />}
             </TouchableOpacity>
           ))
@@ -317,9 +322,20 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.textInverse },
   summaryLabel: { fontSize: fontSize.sm, color: colors.primaryLight, marginTop: spacing.xs, marginBottom: spacing.md },
   summarySplit: { flexDirection: 'row', alignItems: 'center' },
-  summarySplitItem: { flex: 1 },
+  summarySplitItem: { flex: 1, minWidth: 0 },
   summarySplitDivider: { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.3)', marginHorizontal: spacing.md },
   summarySplitValue: { fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.textInverse },
+  summaryExpensesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.3)',
+  },
+  summaryExpensesValue: { flexShrink: 1, fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.textInverse },
   summarySplitLabel: { fontSize: fontSize.xs, color: colors.primaryLight, marginTop: 2 },
   periodStatsRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   periodStatBox: {
@@ -355,7 +371,7 @@ const styles = StyleSheet.create({
   barLabel: { width: 52, fontSize: fontSize.xs, color: colors.textSecondary },
   barTrack: { flex: 1, height: 12, borderRadius: 6, backgroundColor: colors.background, overflow: 'hidden' },
   barFill: { height: 12, borderRadius: 6 },
-  barValue: { width: 92, textAlign: 'right', fontSize: fontSize.xs, fontWeight: fontWeight.semibold, color: colors.textPrimary },
+  barValue: { width: 104, textAlign: 'right', fontSize: fontSize.xs, fontWeight: fontWeight.semibold, color: colors.textPrimary },
   manageExpenses: {
     flexDirection: 'row',
     alignItems: 'center',

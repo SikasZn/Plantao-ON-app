@@ -31,7 +31,12 @@
       "expo-sharing",
       "expo-mail-composer",
       "@react-native-community/datetimepicker",
-      "@react-native-google-signin/google-signin",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.682503401370-agjqg5626cbam1lmg7qpmsm230hmeffm"
+        }
+      ],
       "expo-apple-authentication",
       [
         "expo-image-picker",

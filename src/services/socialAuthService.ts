@@ -33,7 +33,14 @@ export function configureGoogleSignIn() {
     return;
   }
 
-  GoogleSignin.configure({ webClientId });
+  // No iOS o SDK precisa também do ID de cliente iOS (tipo "iOS" no Google
+  // Cloud, com o bundle com.imttech.plantaoon). Sem ele o login/Agenda
+  // falha com "failed to determine clientID".
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+  if (Platform.OS === 'ios' && !iosClientId) {
+    console.warn('EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID não está definido — o Google no iOS vai falhar.');
+  }
+  GoogleSignin.configure({ webClientId, iosClientId: iosClientId || undefined });
   googleConfigured = true;
 }
 

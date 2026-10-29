@@ -132,7 +132,9 @@ export function HospitalShiftsScreen({ navigation, route }: Props) {
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.summaryItem}>
-      <Text style={styles.summaryValue}>{value}</Text>
+      <Text style={styles.summaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+        {value}
+      </Text>
       <Text style={styles.summaryLabel}>{label}</Text>
     </View>
   );
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
-  summaryItem: { flex: 1, alignItems: 'center' },
+  summaryItem: { flex: 1, minWidth: 0, alignItems: 'center' },
   summaryValue: { fontSize: fontSize.base, fontWeight: fontWeight.bold, color: colors.textPrimary },
   summaryLabel: { fontSize: fontSize.xs, color: colors.textSecondary, marginTop: 2 },
   empty: { fontSize: fontSize.sm, color: colors.textSecondary },
