@@ -24,7 +24,8 @@ import { isAdult, MIN_AGE, toLocalDateKey } from '../../utils/date';
 import { colors, spacing, fontSize, fontWeight } from '../../theme';
 
 const schema = z.object({
-  fullName: z.string().min(2, 'Informe seu nome completo'),
+  // o mínimo de 2 caracteres é checado no envio, só pra quem não entrou com a Apple
+  fullName: z.string(),
   specialty: z.string().min(2, 'Selecione sua especialização'),
   // Obrigatórios: a data de nascimento e o sexo precisam ser informados
   birthDate: z
@@ -41,9 +42,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-// A Apple só envia o nome na primeira autorização (e a pessoa pode ocultá-lo).
-// Sem nome, usamos um tratamento neutro — dá pra editar depois em Perfil.
-const APPLE_NAME_FALLBACK = 'Doutor(a)';
 
 export function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -62,6 +60,7 @@ export function CompleteProfileScreen() {
     handleSubmit,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -79,24 +78,29 @@ export function CompleteProfileScreen() {
     getOwnProfile(user.id)
       .then((profile) => {
         if (profile.fullName) setValue('fullName', profile.fullName);
-        else if (isApple) setValue('fullName', APPLE_NAME_FALLBACK);
         if (profile.specialty) setValue('specialty', profile.specialty);
         if (profile.birthDate) setValue('birthDate', new Date(`${profile.birthDate}T00:00:00`));
         if (profile.sex) setValue('sex', profile.sex);
       })
       .catch(() => {
         // sem problema — a pessoa só preenche do zero
-        if (isApple) setValue('fullName', APPLE_NAME_FALLBACK);
       })
       .finally(() => setIsLoadingProfile(false));
   }, [user, isApple, setValue]);
 
   async function onSubmit(data: FormData) {
     if (!user) return;
+    // Apple: o nome vem da própria conta Apple (gravado no login) e nunca é
+    // pedido aqui — nem sobrescrito. Se a Apple não enviou, fica em branco
+    // e o app mostra só "Olá!". Nos demais logins o nome continua obrigatório.
+    if (!isApple && data.fullName.trim().length < 2) {
+      setError('fullName', { message: 'Informe seu nome completo' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       await updateOwnProfile(user.id, {
-        fullName: data.fullName,
+        ...(isApple ? {} : { fullName: data.fullName }),
         specialty: data.specialty,
         birthDate: data.birthDate ? toLocalDateKey(data.birthDate) : null,
         sex: data.sex,

@@ -148,9 +148,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const familyName = result.fullName?.familyName ?? '';
       const fullName = `${givenName} ${familyName}`.trim();
       if (fullName) {
-        await updateOwnProfile(data.user.id, { fullName }).catch(() => {
-          // não trava o login por causa disso — o nome fica em branco e
-          // pode ser preenchido depois na tela de completar perfil
+        // tenta de novo uma vez: logo após criar a conta, a linha do profile
+        // (criada por trigger no banco) pode demorar um instante a existir
+        const userId = data.user.id;
+        await updateOwnProfile(userId, { fullName }).catch(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          await updateOwnProfile(userId, { fullName }).catch(() => {
+            // não trava o login por causa disso — o nome pode ser editado
+            // depois em Perfil
+          });
         });
       }
 
