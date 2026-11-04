@@ -41,10 +41,20 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+// A Apple só envia o nome na primeira autorização (e a pessoa pode ocultá-lo).
+// Sem nome, usamos um tratamento neutro — dá pra editar depois em Perfil.
+const APPLE_NAME_FALLBACK = 'Doutor(a)';
+
 export function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, completeProfileCompletion } = useAuth();
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  // Quem entra com a Apple não pode ser obrigado a digitar nome/e-mail de
+  // novo (Guideline 4 da App Store): a Apple já entrega esses dados, então
+  // o campo de nome some e só pedimos o que a Apple não fornece.
+  const isApple =
+    user?.app_metadata?.provider === 'apple' ||
+    (user?.identities ?? []).some((identity) => identity.provider === 'apple');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -69,15 +79,17 @@ export function CompleteProfileScreen() {
     getOwnProfile(user.id)
       .then((profile) => {
         if (profile.fullName) setValue('fullName', profile.fullName);
+        else if (isApple) setValue('fullName', APPLE_NAME_FALLBACK);
         if (profile.specialty) setValue('specialty', profile.specialty);
         if (profile.birthDate) setValue('birthDate', new Date(`${profile.birthDate}T00:00:00`));
         if (profile.sex) setValue('sex', profile.sex);
       })
       .catch(() => {
         // sem problema — a pessoa só preenche do zero
+        if (isApple) setValue('fullName', APPLE_NAME_FALLBACK);
       })
       .finally(() => setIsLoadingProfile(false));
-  }, [user, setValue]);
+  }, [user, isApple, setValue]);
 
   async function onSubmit(data: FormData) {
     if (!user) return;
@@ -102,27 +114,33 @@ export function CompleteProfileScreen() {
           <Logo size={72} />
         </View>
         <Text style={styles.title}>Só mais um passo</Text>
-        <Text style={styles.subtitle}>Confirme seus dados básicos pra gente personalizar sua conta.</Text>
+        <Text style={styles.subtitle}>
+          {isApple
+            ? 'Só faltam alguns dados pra gente personalizar sua conta.'
+            : 'Confirme seus dados básicos pra gente personalizar sua conta.'}
+        </Text>
 
         {isLoadingProfile ? (
           <ActivityIndicator style={styles.loading} color={colors.primary} />
         ) : (
           <View style={styles.form}>
-            <Controller
-              control={control}
-              name="fullName"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextField
-                  label="Nome completo"
-                  placeholder="José Milton"
-                  icon={<User size={20} color={colors.textSecondary} />}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  error={errors.fullName?.message}
-                />
-              )}
-            />
+            {!isApple && (
+              <Controller
+                control={control}
+                name="fullName"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextField
+                    label="Nome completo"
+                    placeholder="José Milton"
+                    icon={<User size={20} color={colors.textSecondary} />}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    error={errors.fullName?.message}
+                  />
+                )}
+              />
+            )}
 
             <Controller
               control={control}
